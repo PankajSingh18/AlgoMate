@@ -208,4 +208,75 @@ public class PracticeServiceUnitTest {
         assertEquals(clientFuture, stats.getLastActiveDate());
         verify(statsRepository, times(1)).save(stats);
     }
+
+    @Test
+    public void testUpdateStreakGapWithFreezeAvailable_consumesFreezeAndPreservesStreak() {
+        UUID userId = UUID.randomUUID();
+        LocalDate lastActive = LocalDate.of(2026, 7, 5);
+        // Gap of 4 days, but user has 2 streak freezes available
+        LocalDate clientFuture = LocalDate.of(2026, 7, 9);
+        UserPracticeStats stats = new UserPracticeStats(userId, 10, 12, lastActive, 0);
+        stats.setStreakFreezeCount(2);
+
+        doNothing().when(statsRepository).insertStatsIfNotExists(userId);
+        when(statsRepository.findAndLockByUserId(userId)).thenReturn(Optional.of(stats));
+
+        practiceService.updateStreak(userId, clientFuture);
+
+        // currentStreak must be preserved, not reset
+        assertEquals(10, stats.getCurrentStreak());
+        // longestStreak untouched since currentStreak didn't grow
+        assertEquals(12, stats.getLongestStreak());
+        // exactly 1 freeze consumed
+        assertEquals(1, stats.getStreakFreezeCount());
+        // lastActiveDate patched to the day before clientFuture
+        assertEquals(clientFuture.minusDays(1), stats.getLastActiveDate());
+        verify(statsRepository, times(1)).save(stats);
+    }
+
+    @Test
+    public void testUpdateStreakGapWithNoFreezeAvailable_resetsToOne() {
+        UUID userId = UUID.randomUUID();
+        LocalDate lastActive = LocalDate.of(2026, 7, 5);
+        LocalDate clientFuture = LocalDate.of(2026, 7, 9);
+        UserPracticeStats stats = new UserPracticeStats(userId, 10, 12, lastActive, 0);
+        stats.setStreakFreezeCount(0);
+
+        doNothing().when(statsRepository).insertStatsIfNotExists(userId);
+        when(statsRepository.findAndLockByUserId(userId)).thenReturn(Optional.of(stats));
+
+        practiceService.updateStreak(userId, clientFuture);
+
+        // No freeze available -> existing reset behavior applies
+        assertEquals(1, stats.getCurrentStreak());
+        assertEquals(12, stats.getLongestStreak());
+        assertEquals(0, stats.getStreakFreezeCount());
+        assertEquals(clientFuture, stats.getLastActiveDate());
+        verify(statsRepository, times(1)).save(stats);
+    }
+
+    @Test
+    public void testUpdateStreakFreezeConsumption_thenNextDayContinuesConsecutively() {
+        UUID userId = UUID.randomUUID();
+        LocalDate lastActive = LocalDate.of(2026, 7, 5);
+        LocalDate missedCheckIn = LocalDate.of(2026, 7, 9);
+        UserPracticeStats stats = new UserPracticeStats(userId, 10, 12, lastActive, 0);
+        stats.setStreakFreezeCount(1);
+
+        doNothing().when(statsRepository).insertStatsIfNotExists(userId);
+        when(statsRepository.findAndLockByUserId(userId)).thenReturn(Optional.of(stats));
+
+        // First call: gap covered by freeze
+        practiceService.updateStreak(userId, missedCheckIn);
+        assertEquals(10, stats.getCurrentStreak());
+        assertEquals(0, stats.getStreakFreezeCount());
+        assertEquals(missedCheckIn.minusDays(1), stats.getLastActiveDate());
+
+        // Second call: next day, should now be treated as consecutive and increment
+        LocalDate nextDay = missedCheckIn;
+        practiceService.updateStreak(userId, nextDay);
+        assertEquals(11, stats.getCurrentStreak());
+        assertEquals(12, stats.getLongestStreak());
+        assertEquals(nextDay, stats.getLastActiveDate());
+    }
 }

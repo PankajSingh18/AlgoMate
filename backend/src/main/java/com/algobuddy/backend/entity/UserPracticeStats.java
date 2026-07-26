@@ -34,6 +34,9 @@ public class UserPracticeStats {
     @Column(name = "visualized_count")
     private Integer visualizedCount = 0;
 
+    @Column(name = "streak_freeze_count")
+    private Integer streakFreezeCount = 0;
+
     @Version
     @Column(name = "version")
     private Integer version = 0;
@@ -44,6 +47,7 @@ public class UserPracticeStats {
         this.longestStreak = longestStreak;
         this.lastActiveDate = lastActiveDate;
         this.visualizedCount = visualizedCount;
+        this.streakFreezeCount = 0;
         this.version = 0;
     }
 }

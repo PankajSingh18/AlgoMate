@@ -186,9 +186,16 @@ public class PracticeService {
             }
             stats.setLastActiveDate(today);
         } else if (!lastActive.equals(today)) {
-            // Streak broken (not today, not yesterday, and not in the past)
-            stats.setCurrentStreak(1);
-            stats.setLastActiveDate(today);
+            // Streak gap detected (not today, not yesterday, and not in the past).
+            // Check for an available streak freeze before resetting.
+            if (stats.getStreakFreezeCount() != null && stats.getStreakFreezeCount() > 0) {
+                stats.setStreakFreezeCount(stats.getStreakFreezeCount() - 1);
+                stats.setLastActiveDate(today.minusDays(1));
+                // currentStreak intentionally preserved, not reset.
+            } else {
+                stats.setCurrentStreak(1);
+                stats.setLastActiveDate(today);
+            }
         }
         // If lastActive.equals(today), do nothing (streak already incremented today)
 

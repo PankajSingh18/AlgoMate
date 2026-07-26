@@ -18,8 +18,8 @@ public interface UserPracticeStatsRepository extends JpaRepository<UserPracticeS
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
-        INSERT INTO user_practice_stats (user_id, current_streak, longest_streak, last_active_date, visualized_count)
-        VALUES (:userId, 0, 0, NULL, 0)
+        INSERT INTO user_practice_stats (user_id, current_streak, longest_streak, last_active_date, visualized_count, streak_freeze_count)
+        VALUES (:userId, 0, 0, NULL, 0, 0)
         ON CONFLICT (user_id) DO NOTHING
         """, nativeQuery = true)
     void insertStatsIfNotExists(@Param("userId") UUID userId);
