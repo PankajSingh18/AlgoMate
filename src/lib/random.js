@@ -5,7 +5,7 @@
  */
 export function generateSecureCode(length = 6) {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const biasLimit = Math.floor((2 ** 32 / charset.length) * charset.length);
+  const biasLimit = Math.floor(2 ** 32 / charset.length) * charset.length;
   const array = new Uint32Array(length);
   let code = '';
   let filled = 0;
