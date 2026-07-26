@@ -663,7 +663,7 @@ export const practiceData = [
             practiceUrl:"https://leetcode.com/problems/subsets/",
             visualizerUrl:"/visualizer/recursion/subsets",
             theory:{
-              summary:" Generate all posible subnets (the power set) of a given element.or exclude it.",
+              summary:"Generate all possible subsets (the power set) of a given set by choosing to include or exclude each element.",
               steps:[
                 "Start with an empty subnet and index 0.",
                 "At each index, make two recursive choices: include the current element, exclude it.",
@@ -671,9 +671,9 @@ export const practiceData = [
                 "Base case: when index reaches the end of the array, add the current subnet to the result.",
                 "Backtrack by removing the last added element before trying the next choice."
               ],
-              comlexity: { time: "0(2^N)", space:"0(N) recursion stack"},
+              complexity: { time: "O(2^N)", space:"O(N) recursion stack"},
               pitfalls: "Forgetting to backtrack (remove the element) after the 'include' branch, which causes wrong subnets to carry over into later paths.",
-              tip:" This 'include or exclude' patter is the foundation for many backtracking problem like combination sum and permutation = master this first!"
+              tip:" This 'include or exclude' pattern is the foundation for many backtracking problems like combination sum and permutation = master this first!"
             }
 
           }

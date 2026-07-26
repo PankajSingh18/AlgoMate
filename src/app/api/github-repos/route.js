@@ -35,6 +35,11 @@ export async function GET(request) {
 
     const data = await res.json();
 
+    if (!Array.isArray(data)) {
+      console.error("[github-repos] expected array but got:", typeof data);
+      return NextResponse.json({ error: "Unexpected response from GitHub API" }, { status: 502 });
+    }
+
     const repos = data
       .filter((repo) => !repo.fork)
       .map((repo) => ({
