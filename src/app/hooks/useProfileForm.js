@@ -91,7 +91,7 @@ export function useProfileForm(user, setUser) {
       } catch (error) {
         console.error(error);
         toast.error(
-          error.message?.includes("Bucket")
+          error?.message?.includes("Bucket")
             ? "Create a public Supabase Storage bucket named avatars"
             : "Failed to update profile photo"
         );

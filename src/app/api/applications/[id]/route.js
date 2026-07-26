@@ -88,6 +88,9 @@ export async function PATCH(request, { params }) {
     const emailNotificationsEnabled = studentMeta.email_notifications !== false;
 
     if (emailNotificationsEnabled) {
+      if (!application.student_email) {
+        console.error("[/api/applications/[id] PATCH] Skipping status email: no student email on record");
+      } else {
       const appUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
       await sendEmail({
         to: application.student_email,
@@ -110,6 +113,7 @@ export async function PATCH(request, { params }) {
           </div>
         `,
       });
+      }
     }
 
     return jsonResponse({ success: true, status });

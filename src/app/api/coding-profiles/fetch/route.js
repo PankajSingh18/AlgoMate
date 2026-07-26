@@ -16,6 +16,10 @@ export async function GET(request) {
     return NextResponse.json({ error: "Missing platform or username" }, { status: 400 });
   }
 
+  if (username.length < 1 || username.length > 64) {
+    return NextResponse.json({ error: "Username must be between 1 and 64 characters" }, { status: 400 });
+  }
+
   try {
     switch (platform) {
       case "leetcode":
@@ -107,9 +111,11 @@ async function fetchCodeChef(username) {
     return NextResponse.json({ error: `CodeChef user "${username}" not found` }, { status: 404 });
   }
 
-  // stars come as a string like "3★" — extract the number
-  const starsRaw = json.stars ?? "0★";
-  const stars = parseInt(starsRaw.replace("★", ""), 10) || 0;
+  // stars come as a string like "3★" (sometimes with mojibake around the star glyph) —
+  // extract the leading number regardless of the star character encoding.
+  const starsRaw = json.stars ?? "0";
+  const starsMatch = String(starsRaw).match(/\d+/);
+  const stars = starsMatch ? parseInt(starsMatch[0], 10) : 0;
 
   return NextResponse.json({ platform: "codechef", username, value: stars });
 }
