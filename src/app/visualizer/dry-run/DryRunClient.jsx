@@ -49,13 +49,14 @@ if (numbers[1] < numbers[minIndex]) {
 }
 swap(numbers[0], numbers[minIndex]);
 cout << numbers[0] << " " << numbers[1];`,
-  Java: `int[] numbers = {5, 2, 8, 1};
+   Java: `import java.util.Arrays;
+int[] numbers = {5, 2, 8, 1};
 int minIndex = 0;
 if (numbers[1] < numbers[minIndex]) {
   minIndex = 1;
 }
 swap(numbers, 0, minIndex);
-System.out.println(numbers);`,
+System.out.println(Arrays.toString(numbers));`,
 };
 
 const LANGUAGE_HINTS = {
