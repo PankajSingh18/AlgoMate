@@ -76,7 +76,8 @@ export function generateInfixToPrefixSteps(infix) {
       while (
         tempStack.length &&
         tempStack[tempStack.length - 1] !== "(" &&
-        precedence[ch] <= precedence[tempStack[tempStack.length - 1]]
+        (precedence[ch] < precedence[tempStack[tempStack.length - 1]] ||
+         (precedence[ch] === precedence[tempStack[tempStack.length - 1]] && ch === '^'))
       ) {
         const popped = tempStack.pop();
         tempOutput.push(popped);
