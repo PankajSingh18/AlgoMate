@@ -101,7 +101,7 @@ export async function GET(request) {
 
     if (error) {
       console.error("[/api/bookmarks GET] Supabase error:", error.message);
-      return jsonResponse([]);
+      return jsonResponse({ error: error.message }, 500);
     }
 
     return jsonResponse(bookmarks || []);
