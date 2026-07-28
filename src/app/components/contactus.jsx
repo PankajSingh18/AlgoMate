@@ -71,7 +71,7 @@ const ContactUs = () => {
           subject: formData.subject,
           category: formData.category,
           message: formData.message,
-          captchaToken: "",
+          captchaToken: formData.captchaToken,
         },
       });
 
@@ -149,7 +149,7 @@ const ContactUs = () => {
                     <div>
                       <h3 className="font-semibold text-lg">Phone</h3>
                       <p className="text-udemy-muted dark:text-udemy-dark-muted text-sm mt-1">
-                        +91 XXXXX XXXXX
+                        Available upon request via email
                       </p>
                     </div>
                   </div>
