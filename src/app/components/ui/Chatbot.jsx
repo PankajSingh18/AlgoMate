@@ -39,6 +39,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { api } from "@/lib/apiClient";
 import { CSRF_HEADER_NAME } from "@/lib/csrfConstants";
+import { usePathname } from "next/navigation";
 
 // ─── Custom Robot Icon matching AlgoBuddy Theme ──────────────────────────────
 
@@ -416,6 +417,7 @@ export default function Chatbot() {
   const [unreadCount, setUnreadCount] = useState(0);
   const previousMessageCount = useRef(messages.length);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const pathname = usePathname();
 
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -520,7 +522,7 @@ if (csrfToken) {
 const res = await fetch("/api/chatbot", {
   method: "POST",
   headers,
-  body: JSON.stringify({ messages: history }),
+  body: JSON.stringify({ messages: history, currentUrl: pathname }),
   signal: abortControllerRef.current.signal,
 });
 
@@ -587,7 +589,7 @@ const res = await fetch("/api/chatbot", {
         setIsStreaming(false);
       }
     },
-    [inputValue, isStreaming, messages, hasInteracted]
+    [inputValue, isStreaming, messages, hasInteracted, pathname]
   );
 
   const handleKeyDown = (e) => {

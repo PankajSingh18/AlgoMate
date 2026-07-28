@@ -3,6 +3,7 @@
 // friendly token-limit error messages, and Upstash Redis rate limiting.
 
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getClientIp } from "@/lib/getClientIp";
 import { Ratelimit } from "@upstash/ratelimit";
@@ -71,13 +72,17 @@ politely redirect the conversation back to DSA.`;
 // ─────────────────────────────────────────────────────────────────────────────
 export async function POST(request) {
   try {
+    // ── 0. AUTHENTICATION ─────────────────────────────────────────────────────
+    const authResult = await getAuthenticatedUser();
+    if (!authResult.success) {
+      if (authResult.type === "CONFIG_ERROR" || authResult.type === "AUTH_PROVIDER_ERROR") {
+        return NextResponse.json({ error: "Authentication service unavailable" }, { status: 500 });
+      }
+      return NextResponse.json({ error: "Authentication required to use the AI Chatbot." }, { status: 401 });
+    }
+
     // ── 1. RATE LIMITING ──────────────────────────────────────────────────────
-    // Use the authenticated user ID as the rate-limit identifier when available,
-    // falling back to IP address for unauthenticated requests.
-    // The x-user-id header is set by authProxy.js middleware after Supabase
-    // session verification.
-    const userId = request.headers.get("x-user-id");
-    const rateLimitId = userId || getClientIp(request) || "anonymous";
+    const rateLimitId = authResult.user?.id || getClientIp(request);
 
     const { success, limit, remaining, reset } = await ratelimit.limit(rateLimitId);
 
@@ -111,7 +116,7 @@ export async function POST(request) {
       );
     }
 
-    const { message, history = [] } = body;
+    const { message, history = [], currentUrl = "unknown" } = body;
 
     // ── 3. INPUT VALIDATION ───────────────────────────────────────────────────
     // Check message exists and is a string
@@ -169,9 +174,13 @@ export async function POST(request) {
     const truncatedHistory = history.slice(-(MAX_HISTORY_TURNS * 2));
 
     // ── 5. CALL GEMINI API ────────────────────────────────────────────────────
+    
+    // Dynamically inject the user's current URL for Context Awareness
+    const dynamicSystemPrompt = `${SYSTEM_PROMPT}\n\n[CONTEXT]: The user is currently viewing the page at URL path: ${currentUrl}. If they ask a vague question (e.g. 'explain this', 'give me an example'), assume they are asking about the algorithm or topic related to this page.`;
+
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash", // Fast and free-tier friendly
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: dynamicSystemPrompt,
     });
 
     // Start a chat session with the truncated history
