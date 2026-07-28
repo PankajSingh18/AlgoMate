@@ -40,7 +40,6 @@ export async function proxy(request) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, {
               ...options,
@@ -53,22 +52,19 @@ export async function proxy(request) {
   );
 
   const { data: { user }, error } = await supabase.auth.getUser();
-// Forward the verified user to route handlers so they can skip
-// a redundant getUser() call, cutting auth latency in half.
 const requestHeaders = new Headers(request.headers);
 
-// Always strip client-supplied identity headers first
 requestHeaders.delete('x-user-id');
 requestHeaders.delete('x-user-email');
 
 if (user) {
-  // Only set after Supabase has verified the session
   requestHeaders.set('x-user-id', user.id);
   requestHeaders.set('x-user-email', user.email || '');
 }
 
 supabaseResponse = NextResponse.next({
   request: { headers: requestHeaders },
+  headers: supabaseResponse.headers,
 });
   const pathname = request.nextUrl.pathname;
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
