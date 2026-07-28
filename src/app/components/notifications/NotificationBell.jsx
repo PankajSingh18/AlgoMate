@@ -17,6 +17,7 @@ export default function NotificationBell() {
     setLoading(true);
     try {
       const res = await fetch("/api/notifications?limit=5");
+      if (!res.ok) throw new Error("Failed to fetch notifications");
       const data = await res.json();
       setNotifications(data.notifications || []);
       setTotalUnread(data.totalUnread || 0);
