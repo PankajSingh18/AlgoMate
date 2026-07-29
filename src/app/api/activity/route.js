@@ -48,7 +48,7 @@ export async function GET(request) {
     }
     const MAX_DAYS = 365;
     const { searchParams } = new URL(request.url);
-    const rawDays = parseInt(searchParams.get("days") || "30", 10);
+    const rawDays = parseInt(searchParams.get("days", 10) || "30", 10);
     const days = Number.isFinite(rawDays) ? Math.min(Math.max(rawDays, 1), MAX_DAYS) : 30;
     const since = new Date();
     since.setDate(since.getDate() - days);
