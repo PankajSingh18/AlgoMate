@@ -13,6 +13,7 @@ import { api } from "@/lib/apiClient";
 
 const Turnstile = dynamic(
   () => import("@marsidev/react-turnstile").then((mod) => mod.Turnstile),
+.catch(err => console.error(err))
   { ssr: false },
 );
 
