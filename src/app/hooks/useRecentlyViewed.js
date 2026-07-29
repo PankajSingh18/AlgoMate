@@ -9,23 +9,4 @@ export function useRecentlyViewed() {
 
   useEffect(() => {
     persistence.get('RECENTLY_VIEWED').then((stored) => {
-      if (stored) setRecentlyViewed(prev => prev.length === 0 ? stored : prev);
-    });
-  }, []);
-
-  const addRecentlyViewed = (item) => {
-    setRecentlyViewed((prev) => {
-      const filtered = prev.filter((i) => i.path !== item.path);
-      const updated = [item, ...filtered].slice(0, MAX_RECENT);
-      persistence.set('RECENTLY_VIEWED', updated);
-      return updated;
-    });
-  };
-
-  const clearRecentlyViewed = () => {
-    persistence.remove('RECENTLY_VIEWED');
-    setRecentlyViewed([]);
-  };
-
-  return { recentlyViewed, addRecentlyViewed, clearRecentlyViewed };
-}
+    .catch(err => console.error(err))
