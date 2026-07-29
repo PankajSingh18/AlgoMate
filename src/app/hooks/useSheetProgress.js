@@ -148,8 +148,8 @@ async function bulkSyncToServer(items) {
 // ---------------------------------------------------------------------------
 
 function readLocalStreak() {
-  const current = parseInt(localStorage.getItem(STREAK_KEY) || "0", 10);
-  const best = parseInt(localStorage.getItem(BEST_STREAK_KEY) || "0", 10);
+  const current = parseInt(localStorage.getItem(STREAK_KEY, 10) || "0", 10);
+  const best = parseInt(localStorage.getItem(BEST_STREAK_KEY, 10) || "0", 10);
   return { current, best };
 }
 
@@ -160,7 +160,7 @@ function updateLocalStreak(currentStreak) {
 
   const yesterday = new Date(Date.now() - 86400000).toDateString();
   let next = lastActive === yesterday ? currentStreak + 1 : 1;
-  const best = Math.max(parseInt(localStorage.getItem(BEST_STREAK_KEY) || "0", 10), next);
+  const best = Math.max(parseInt(localStorage.getItem(BEST_STREAK_KEY, 10) || "0", 10), next);
 
   localStorage.setItem(STREAK_KEY, String(next));
   localStorage.setItem(BEST_STREAK_KEY, String(best));
