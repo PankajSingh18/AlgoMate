@@ -83,8 +83,8 @@ export async function GET(request) {
 
     const MAX_LIMIT = 100;
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page")) || 1;
-    const rawLimit = parseInt(searchParams.get("limit")) || 50;
+    const page = parseInt(searchParams.get("page", 10)) || 1;
+    const rawLimit = parseInt(searchParams.get("limit", 10)) || 50;
     const limit = Math.min(Math.max(rawLimit, 1), MAX_LIMIT);
     const skip = (page - 1) * limit;
 
