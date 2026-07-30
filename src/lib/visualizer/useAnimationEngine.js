@@ -155,41 +155,4 @@ export function useAnimationEngine({ steps, onStep, initialSpeed = DEFAULT_SPEED
           
           isSpeakingRef.current = true;
           speakRef.current(text, rate).then(() => {
-            if (!cancelled) {
-              isSpeakingRef.current = false;
-              lastFrameTime.current = 0; 
-            }
-          });
-          
-          lastSpokenTextRef.current = text;
-        }
-      }
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currentStep, steps, stepsLength]);
-
-  useEffect(() => {
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, []);
-
-  return {
-    currentStep,
-    isPlaying,
-    speed,
-    setSpeed,
-    play,
-    pause,
-    reset,
-    stepForward,
-    stepBackward,
-    goToStep,
-  };
-}
+          .catch(err => console.error(err))
