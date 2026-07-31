@@ -40,7 +40,7 @@ export default function GraphVisualizer() {
 
     for (const [node, neighbors] of Object.entries(graph)) {
       for (const neighbor of neighbors) {
-        const key = [node, neighbor].sort().join("-");
+        const key = [node, neighbor].sort((a, b) => a - b).join("-");
         if (drawn.has(key)) continue;
         drawn.add(key);
 
