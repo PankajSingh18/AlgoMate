@@ -13,8 +13,8 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(Math.max(parseInt(searchParams.get("limit")) || 12, 1), 100);
-    const offset = Math.max(parseInt(searchParams.get("offset")) || 0, 0);
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit", 10)) || 12, 1), 100);
+    const offset = Math.max(parseInt(searchParams.get("offset", 10)) || 0, 0);
 
     const cookieStore = await cookies();
     const client = createServerClient(config.supabaseUrl, config.supabaseAnonKey, {
