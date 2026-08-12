@@ -53,6 +53,7 @@ export function* dequeueFrontGenerator(currentQueue) {
 
 export function* peekFrontGenerator(queue) {
   if (queue.length === 0) {
+    yield { phase: 'error', action: 'peek_front', queue: [...queue], explanation: 'Cannot peek front, queue is empty!' };
     yield { type: 'error', message: 'Queue is empty!' };
     return;
   }
