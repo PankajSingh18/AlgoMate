@@ -26,6 +26,7 @@ export function* enqueueRearGenerator(currentQueue, value) {
 
 export function* dequeueFrontGenerator(currentQueue) {
   if (currentQueue.length === 0) {
+    yield { phase: 'error', action: 'dequeue', queue: [...currentQueue], explanation: 'Cannot dequeue, queue is empty!' };
     yield { type: 'error', message: 'Queue is empty!' };
     return;
   }
