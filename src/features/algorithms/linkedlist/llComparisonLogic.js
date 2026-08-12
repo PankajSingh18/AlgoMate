@@ -1,5 +1,6 @@
 export function* compareListsGenerator(list1, list2) {
   if (list1.length === 0 || list2.length === 0) {
+    yield { phase: 'error', list1Index: -1, list2Index: -1, explanation: 'Cannot compare, both lists must be generated.' };
     yield { type: 'error', message: 'Both lists must be generated.' };
     return;
   }
