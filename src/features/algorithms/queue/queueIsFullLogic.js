@@ -19,6 +19,7 @@ export function* checkFullGenerator(queue, capacity) {
 
 export function* enqueueGenerator(currentQueue, value, capacity) {
   if (currentQueue.length >= capacity) {
+    yield { phase: 'error', action: 'enqueue', queue: [...currentQueue], explanation: 'Cannot enqueue, queue is full!' };
     yield { type: 'error', message: 'Queue is full!' };
     return;
   }
