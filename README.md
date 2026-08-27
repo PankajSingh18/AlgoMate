@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:6366f1&height=210&section=header&text=AlgoBuddy&fontSize=68&fontColor=ffffff&fontAlignY=34&desc=Visualize.%20Understand..%20Master...&descAlignY=66&descSize=20&animation=fadeIn" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:6366f1&height=210&section=header&text=AlgoMate&fontSize=68&fontColor=ffffff&fontAlignY=34&desc=Visualize.%20Understand..%20Master...&descAlignY=66&descSize=20&animation=fadeIn" width="100%"/>
 
 <br/>
 
