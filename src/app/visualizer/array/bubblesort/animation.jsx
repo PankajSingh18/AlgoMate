@@ -158,6 +158,7 @@ const BubbleSortVisualizer = () => {
   const [pattern, setPattern] = useState("random");
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef(null);
+  const replayTimerRef = useRef(null);
 
   const [challengeEnabled, setChallengeEnabled] = useState(false);
   const {
@@ -223,13 +224,21 @@ const BubbleSortVisualizer = () => {
   const handleStart = useCallback(() => {
     if (currentStepData?.sorted) {
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else {
       engine.play();
     }
   }, [engine, currentStepData]);
 
   const handleReset = useCallback(() => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
     setVisualState({
       comparisons: 0, swaps: 0, currentIndices: { i: -1, j: -1 },
       currentPhase: "", stepExplanation: "", sorted: false, totalSteps: 0,
@@ -238,6 +247,10 @@ const BubbleSortVisualizer = () => {
     clearInterval(timerRef.current);
     engine.reset();
   }, [engine]);
+
+  useEffect(() => () => {
+    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+  }, []);
 
   useVisualizerKeyboard({
     onStart: handleStart, onReset: handleReset,
