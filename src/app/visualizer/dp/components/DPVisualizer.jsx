@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Settings2, Info, Play, RotateCcw } from "lucide-react";
 import PlaybackControls from "@/app/components/ui/PlaybackControls";
 import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
@@ -16,6 +16,7 @@ export default function DPVisualizer({ algorithm = "knapsack" }) {
   const topic = dpTopics[algorithm];
 
   const [isEditing, setIsEditing] = useState(true);
+  const replayTimerRef = useRef(null);
 
   // Inputs for Knapsack
   const [capacity, setCapacity] = useState(topic.defaultInput.capacity || 5);
@@ -55,7 +56,11 @@ export default function DPVisualizer({ algorithm = "knapsack" }) {
   const togglePlay = () => {
     if (engine.currentStep === frames.length - 1 && frames.length > 0) {
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else if (engine.isPlaying) {
       engine.pause();
     } else {
@@ -65,9 +70,17 @@ export default function DPVisualizer({ algorithm = "knapsack" }) {
   };
 
   const reset = () => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
     engine.reset();
     setIsEditing(true);
   };
+
+  useEffect(() => () => {
+    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+  }, []);
 
   const stepForward = () => {
     engine.stepForward();
