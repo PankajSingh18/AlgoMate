@@ -190,7 +190,9 @@ export const NotificationProvider = ({ children }) => {
 
   const clearAll = () => {
     setNotifications([]);
-    localStorage.removeItem("algobuddy_notifications");
+    try {
+      localStorage.removeItem("algobuddy_notifications");
+    } catch {}
   };
 
   return (
