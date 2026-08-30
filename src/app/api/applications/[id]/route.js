@@ -86,11 +86,12 @@ export async function PATCH(request, { params }) {
     );
     const studentMeta = studentUser?.user?.user_metadata || {};
     const emailNotificationsEnabled = studentMeta.email_notifications !== false;
+    const studentEmail = application.student_email?.trim();
 
-    if (emailNotificationsEnabled) {
+    if (emailNotificationsEnabled && studentEmail) {
       const appUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
       await sendEmail({
-        to: application.student_email,
+        to: studentEmail,
         subject: `Application Update - ${companyName} - ${jobTitle}`,
         html: `
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
