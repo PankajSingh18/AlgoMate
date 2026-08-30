@@ -19,10 +19,12 @@ export default function AlgorithmNotes() {
   // Save notes to localStorage
   const saveToStorage = (updatedNotes) => {
     setNotes(updatedNotes);
-    localStorage.setItem(
-      "algorithm-notes",
-      JSON.stringify(updatedNotes)
-    );
+    try {
+      localStorage.setItem(
+        "algorithm-notes",
+        JSON.stringify(updatedNotes)
+      );
+    } catch {}
   };
 
   // Add or update note
