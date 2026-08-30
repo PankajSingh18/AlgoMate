@@ -19,7 +19,16 @@ class PersistenceManager {
   }
 
   async get(key) {
-    const local = localStorage.getItem(STORAGE_KEYS[key]);
+    const storageKey = STORAGE_KEYS[key];
+    if (typeof window === "undefined" || !storageKey) return null;
+
+    let local = null;
+    try {
+      local = localStorage.getItem(storageKey);
+    } catch {
+      return null;
+    }
+
     if (local) {
       try {
         return JSON.parse(local);
@@ -31,11 +40,27 @@ class PersistenceManager {
   }
 
   set(key, value) {
-    localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(value));
+    const storageKey = STORAGE_KEYS[key];
+    if (typeof window === "undefined" || !storageKey) return false;
+
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(value));
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   remove(key) {
-    localStorage.removeItem(STORAGE_KEYS[key]);
+    const storageKey = STORAGE_KEYS[key];
+    if (typeof window === "undefined" || !storageKey) return false;
+
+    try {
+      localStorage.removeItem(storageKey);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async loadFromServer(table, userId) {
