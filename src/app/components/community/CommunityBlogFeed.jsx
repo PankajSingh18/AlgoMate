@@ -1,9 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PenLine, ArrowRight, Clock, CalendarDays } from "lucide-react";
-import React, { useState, useEffect } from "react";
 
 const CATEGORIES = ["All", "Tutorial", "Experience", "Release", "Guide"];
 
@@ -29,14 +28,6 @@ const handleReadPost = (post) => {
     JSON.stringify(updated)
   );
 };
-
-useEffect(() => {
-  const saved = JSON.parse(
-    localStorage.getItem("blog-reading-history") || "[]"
-  );
-
-  setReadingHistory(saved);
-}, []);
 
 function BlogSkeleton() {
   return (
@@ -121,6 +112,18 @@ function BlogCard({ post }) {
 export default function CommunityBlogFeed({ loading = false }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [readingHistory, setReadingHistory] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("blog-reading-history") || "[]"
+      );
+
+      setReadingHistory(saved);
+    } catch {
+      setReadingHistory([]);
+    }
+  }, []);
 
   const filtered = activeCategory === "All"
     ? MOCK_POSTS
