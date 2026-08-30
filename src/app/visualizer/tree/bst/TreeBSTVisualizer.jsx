@@ -515,6 +515,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      lockRef.current = false;
     };
   }, [isAnimating, currentStepIdx, steps, speed, targetTreeRoot, mode]);
 

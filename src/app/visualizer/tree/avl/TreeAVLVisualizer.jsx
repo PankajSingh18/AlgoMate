@@ -226,6 +226,7 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      lockRef.current = false;
     };
   }, [currentStepIdx, isAnimating, speed, steps, targetTreeRoot]);
 

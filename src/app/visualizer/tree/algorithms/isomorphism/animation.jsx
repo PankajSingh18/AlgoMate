@@ -83,7 +83,10 @@ export default function IsomorphismAnimation() {
       lockRef.current = false;
       setCurrentStepIdx(p => p + 1);
     }, 1600 / speed);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      lockRef.current = false;
+    };
   }, [animating, currentStepIdx, steps, speed]);
 
   const pauseVisualizer = () => { setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); lockRef.current = false; };
