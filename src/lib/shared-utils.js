@@ -41,4 +41,12 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-export { isValidHttpUrl, getSupabaseConfig, escapeHtml };
+/**
+ * Neutralizes CR/LF (and other line breaks) in values that are interpolated
+ * into email headers (replyTo, subject) to prevent header injection.
+ */
+function sanitizeHeaderValue(value) {
+  return String(value ?? "").replace(/[\r\n]+/g, " ").trim();
+}
+
+export { isValidHttpUrl, getSupabaseConfig, escapeHtml, sanitizeHeaderValue };

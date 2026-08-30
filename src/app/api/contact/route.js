@@ -9,7 +9,7 @@ import {
 import { validateCsrfTokenEdge } from "@/lib/csrfToken";
 import { jsonResponse, errorResponse, getSupabaseAdmin } from "@/lib/serverApi";
 import { RATE_LIMITS } from "@/config/rateLimits";
-import { escapeHtml } from "@/lib/shared-utils";
+import { escapeHtml, sanitizeHeaderValue } from "@/lib/shared-utils";
 
 function isValidEmail(value) {
   const email = String(value).trim();
@@ -76,6 +76,20 @@ export async function POST(req) {
       return jsonResponse({ message: "Message is required" }, 400);
     }
 
+    // Sanitize once so both the persisted payload and the direct-send email
+    // stay safe. CR/LF is stripped from header-bound fields (name/email/
+    // subject) to prevent header injection; the message body keeps newlines
+    // and is HTML-escaped at render time.
+    const safeName = escapeHtml(sanitizeHeaderValue(trimmedName));
+    const safeEmail = escapeHtml(sanitizeHeaderValue(trimmedEmail));
+    const safeSubject = escapeHtml(sanitizeHeaderValue(trimmedSubject));
+    const payload = {
+      name: sanitizeHeaderValue(trimmedName),
+      email: sanitizeHeaderValue(trimmedEmail),
+      subject: sanitizeHeaderValue(trimmedSubject),
+      message: trimmedMessage,
+    };
+
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
       return jsonResponse({ message: "Server misconfigured: email credentials missing" }, 500);
     }
@@ -89,7 +103,7 @@ export async function POST(req) {
         const supabase = getSupabaseAdmin();
         await supabase.from("pending_messages").insert({
           type: "contact",
-          payload: { name: trimmedName, email: trimmedEmail, subject: trimmedSubject, message: trimmedMessage },
+          payload,
         });
       } catch (dbErr) {
         console.error("[contact] Failed to persist pending message:", dbErr);
@@ -103,20 +117,20 @@ export async function POST(req) {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      replyTo: trimmedEmail,
+      replyTo: sanitizeHeaderValue(trimmedEmail),
       to: process.env.EMAIL_USER,
-      subject: `New Contact Form Submission: ${trimmedSubject}`,
+      subject: `New Contact Form Submission: ${safeSubject}`,
       text: `
-        Name: ${trimmedName}
-        Email: ${trimmedEmail}
-        Subject: ${trimmedSubject}
-        Message: ${trimmedMessage}
+        Name: ${safeName}
+        Email: ${safeEmail}
+        Subject: ${safeSubject}
+        Message: ${escapeHtml(trimmedMessage)}
       `,
       html: `
         <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${escapeHtml(trimmedName)}</p>
-        <p><strong>Email:</strong> ${escapeHtml(trimmedEmail)}</p>
-        <p><strong>Subject:</strong> ${escapeHtml(trimmedSubject)}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Subject:</strong> ${safeSubject}</p>
         <p><strong>Message:</strong></p>
         <p>${escapeHtml(trimmedMessage).replaceAll("\n", "<br>")}</p>
       `,
@@ -130,7 +144,7 @@ export async function POST(req) {
         const supabase = getSupabaseAdmin();
         await supabase.from("pending_messages").insert({
           type: "contact",
-          payload: { name: trimmedName, email: trimmedEmail, subject: trimmedSubject, message: trimmedMessage },
+          payload,
         });
       } catch (dbErr) {
         console.error("[contact] Failed to persist pending message after email send failure:", dbErr);

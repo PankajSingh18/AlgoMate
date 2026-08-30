@@ -5,7 +5,7 @@ import { verifyTurnstile } from "@/lib/verifyTurnstile";
 import { validateCsrfTokenEdge } from "@/lib/csrfToken";
 import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from "@/lib/csrfConstants";
 import { jsonResponse, errorResponse, getSupabaseAdmin } from "@/lib/serverApi";
-import { escapeHtml } from "@/lib/shared-utils";
+import { escapeHtml, sanitizeHeaderValue } from "@/lib/shared-utils";
 
 function isValidEmail(value) {
   const email = String(value).trim();
@@ -77,6 +77,19 @@ export async function POST(request) {
       return jsonResponse({ success: false, error: "Rating must be an integer between 1 and 5" }, 400);
     }
 
+    // Sanitize once so both the persisted payload and the direct-send email
+    // stay safe. CR/LF is stripped from header-bound fields (name/email) to
+    // prevent header injection; the review body keeps newlines and is
+    // HTML-escaped at render time.
+    const safeName = escapeHtml(sanitizeHeaderValue(trimmedName));
+    const safeEmail = escapeHtml(sanitizeHeaderValue(trimmedEmail));
+    const payload = {
+      name: sanitizeHeaderValue(trimmedName),
+      email: sanitizeHeaderValue(trimmedEmail),
+      review: trimmedReview,
+      rating: safeRating,
+    };
+
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
       return jsonResponse({ success: false, error: "Server misconfigured: email credentials missing" }, 500);
     }
@@ -90,7 +103,7 @@ export async function POST(request) {
         const supabase = getSupabaseAdmin();
         await supabase.from("pending_messages").insert({
           type: "review",
-          payload: { name: trimmedName, email: trimmedEmail, review: trimmedReview, rating: safeRating },
+          payload,
         });
       } catch (dbErr) {
         console.error("[review] Failed to persist pending message:", dbErr);
@@ -106,13 +119,13 @@ export async function POST(request) {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      replyTo: trimmedEmail,
+      replyTo: sanitizeHeaderValue(trimmedEmail),
       to: inboxEmail,
-      subject: `New Review Submission from ${trimmedName}`,
+      subject: `New Review Submission from ${safeName}`,
       html: `
         <h2>New Review Received</h2>
-        <p><strong>Name:</strong> ${escapeHtml(trimmedName)}</p>
-        <p><strong>Email:</strong> ${escapeHtml(trimmedEmail)}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
         <p><strong>Rating:</strong> ${"★".repeat(safeRating)}${"☆".repeat(
           5 - safeRating
         )}</p>
@@ -129,7 +142,7 @@ export async function POST(request) {
         const supabase = getSupabaseAdmin();
         await supabase.from("pending_messages").insert({
           type: "review",
-          payload: { name: trimmedName, email: trimmedEmail, review: trimmedReview, rating: safeRating },
+          payload,
         });
       } catch (dbErr) {
         console.error("[review] Failed to persist pending message after email send failure:", dbErr);
