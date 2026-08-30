@@ -6,8 +6,16 @@ export default function Animation() {
   const [text, setText] = useState("ABABDABACDABABCABAB");
   const [pattern, setPattern] = useState("ABABCABAB");
   const [index, setIndex] = useState(-1);
+  const [error, setError] = useState("");
 
   const runDemo = () => {
+    if (!pattern.trim()) {
+      setIndex(-1);
+      setError("Please enter a non-empty pattern.");
+      return;
+    }
+
+    setError("");
     const found = text.indexOf(pattern);
     setIndex(found);
   };
@@ -70,7 +78,9 @@ export default function Animation() {
         </div>
 
         <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-4">
-          {index === -1 ? (
+          {error ? (
+            <p className="font-semibold text-red-600">{error}</p>
+          ) : index === -1 ? (
             <p>No match found.</p>
           ) : (
             <p className="font-semibold text-green-600">
