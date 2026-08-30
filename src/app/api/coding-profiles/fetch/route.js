@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 
+const MAX_USERNAME_LENGTH = 80;
+
 // GET /api/coding-profiles/fetch?platform=leetcode&username=shruti
 export async function GET(request) {
   const authResult = await getAuthenticatedUser();
@@ -14,6 +16,9 @@ export async function GET(request) {
 
   if (!platform || !username) {
     return NextResponse.json({ error: "Missing platform or username" }, { status: 400 });
+  }
+  if (username.length > MAX_USERNAME_LENGTH) {
+    return NextResponse.json({ error: "Username is too long" }, { status: 400 });
   }
 
   try {
