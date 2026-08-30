@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import ResetButton from "@/app/components/ui/resetButton";
 import GoButton from "@/app/components/ui/goButton";
 import PlaybackControls from "@/app/components/ui/PlaybackControls";
@@ -11,6 +11,7 @@ const AlphaBetaPruning = () => {
   const [arrayElements, setArrayElements] = useState("3, 5, 2, 9, 12, 5, 23, 23");
   const [inputNodes, setInputNodes] = useState([]);
   const [message, setMessage] = useState("Enter 8 comma-separated numbers for leaf nodes.");
+  const replayTimerRef = useRef(null);
 
   const frames = useMemo(() => {
     if (inputNodes.length === 0) return [];
@@ -19,15 +20,24 @@ const AlphaBetaPruning = () => {
 
   const engine = useAnimationEngine({ steps: frames, initialSpeed: 1000 });
 
-  const handleReset = () => {
+  const clearReplayTimer = useCallback(() => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
+  }, []);
+
+  const handleReset = useCallback(() => {
+    clearReplayTimer();
     setMessage("Enter 8 comma-separated numbers for leaf nodes.");
     setInputNodes([]);
     engine.reset();
-  };
+  }, [clearReplayTimer, engine]);
 
-  const handleStart = (e) => {
+  const handleStart = useCallback((e) => {
     if (e) e.preventDefault();
     if (engine.isPlaying) return;
+    clearReplayTimer();
 
     const nums = arrayElements.split(",").map((num) => parseInt(num.trim()));
     if (nums.length !== 8 || nums.some(isNaN)) {
@@ -48,18 +58,24 @@ const AlphaBetaPruning = () => {
     setMessage("Running Alpha-Beta Pruning...");
     engine.reset();
     engine.play();
-  };
+  }, [arrayElements, clearReplayTimer, engine]);
 
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     if (engine.currentStep === frames.length - 1 && frames.length > 0) {
+      clearReplayTimer();
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else if (engine.isPlaying) {
       engine.pause();
     } else {
       engine.play();
     }
-  };
+  }, [clearReplayTimer, engine, frames.length]);
+
+  useEffect(() => clearReplayTimer, [clearReplayTimer]);
 
   useVisualizerKeyboard({
     onStart: togglePlay,
