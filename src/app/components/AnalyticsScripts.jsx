@@ -11,6 +11,8 @@ import {
 export default function AnalyticsScripts({ gaId, adsenseClientId }) {
     const [analyticsAllowed, setAnalyticsAllowed] = useState(false);
     const [marketingAllowed, setMarketingAllowed] = useState(false);
+    const safeGaId =
+    typeof gaId === "string" && /^G-[A-Z0-9]+$/i.test(gaId) ? gaId : "";
 
     useEffect(() => {
     const syncConsent = () => {
@@ -36,10 +38,10 @@ export default function AnalyticsScripts({ gaId, adsenseClientId }) {
             strategy="afterInteractive"
         />
         )}
-        {analyticsAllowed && gaId && (
+        {analyticsAllowed && safeGaId && (
         <>
             <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(safeGaId)}`}
             strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
@@ -47,7 +49,7 @@ export default function AnalyticsScripts({ gaId, adsenseClientId }) {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${gaId}', {
+                gtag('config', ${JSON.stringify(safeGaId)}, {
                 page_path: window.location.pathname,
                 });
                 `}
