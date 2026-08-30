@@ -1,7 +1,13 @@
 export const saveToStorage = (key, value) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch {
+      return false;
+    }
   }
+  return false;
 };
 
 export const loadFromStorage = (key, fallback) => {
@@ -22,6 +28,12 @@ export const loadFromStorage = (key, fallback) => {
 
 export const removeFromStorage = (key) => {
   if (typeof window !== "undefined") {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch {
+      return false;
+    }
   }
+  return false;
 };
