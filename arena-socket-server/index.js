@@ -326,20 +326,103 @@ function getKey(header, callback) {
   });
 }
 
+// Supabase JWTs are signed with the auth endpoint as the issuer and
+// `authenticated` as the audience. Validating both (plus `role`) is what
+// distinguishes real user sessions from the public anon key (role `anon`)
+// or a service-role key (role `service_role`).
+const SUPABASE_ISSUER = `${(SUPABASE_URL || "").replace(/\/+$/, "")}/auth/v1`;
+
 function verifyAuthToken(token) {
   return new Promise((resolve) => {
     if (!token || !SUPABASE_URL) {
       resolve(null);
       return;
     }
-    jwt.verify(token, getKey, { algorithms: ["ES256", "RS256"] }, function (err, decoded) {
-      if (err) {
-        resolve(null);
-      } else {
-        resolve(decoded);
+    jwt.verify(
+      token,
+      getKey,
+      {
+        algorithms: ["ES256", "RS256"],
+        issuer: SUPABASE_ISSUER,
+        audience: "authenticated"
+      },
+      function (err, decoded) {
+        if (err) {
+          resolve(null);
+        } else if (
+          !decoded ||
+          typeof decoded.sub !== "string" ||
+          decoded.sub.length === 0 ||
+          decoded.role !== "authenticated"
+        ) {
+          resolve(null);
+        } else {
+          resolve(decoded);
+        }
       }
-    });
+    );
   });
+}
+
+// Fixed, server-controlled base URL used for server-side code verification.
+// This must NEVER be derived from the client handshake `origin` — a scripted
+// socket.io client controls that header and would redirect the server to an
+// attacker-chosen host (SSRF). Configure it in production (e.g. CODE_LAB_BASE_URL
+// in the Render dashboard / env). Falls back to localhost for local dev only.
+const CODE_LAB_BASE_URL = (process.env.CODE_LAB_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
+
+// Only the JavaScript sandbox can be executed server-side today, so only
+// `javascript`/`js` submissions can receive a server-side verdict. Every other
+// language (Python, C++, Java, ...) fails closed: a win can never be claimed
+// without server-side evidence the code passed.
+const VERIFIABLE_LANGUAGES = new Set(["javascript", "js"]);
+const VERIFIED_TOPICS = new Set(["Arrays", "Strings"]);
+
+function buildVerificationCode(code, topic) {
+  let verificationCode = typeof code === "string" ? code : "";
+  if (topic === "Arrays") {
+    verificationCode += `\n;
+if (typeof twoSum !== 'function' || JSON.stringify(twoSum([2,7,11,15], 9)) !== '[0,1]' || JSON.stringify(twoSum([3,2,4], 6)) !== '[1,2]') {
+  throw new Error("Validation test cases failed!");
+}`;
+  } else if (topic === "Strings") {
+    verificationCode += `\n;
+if (typeof isAnagram !== 'function' || isAnagram("anagram", "nagaram") !== true || isAnagram("rat", "car") !== false) {
+  throw new Error("Validation test cases failed!");
+}`;
+  }
+  return verificationCode;
+}
+
+async function verifyCodeServerSide(code, language, topic, token) {
+  const lang = (language || "javascript").toLowerCase();
+  if (!VERIFIABLE_LANGUAGES.has(lang)) {
+    return { success: false, status: "UNSUPPORTED_LANGUAGE" };
+  }
+  if (!VERIFIED_TOPICS.has(topic)) {
+    return { success: false, status: "UNSUPPORTED_TOPIC" };
+  }
+  const verificationCode = buildVerificationCode(code, topic);
+  try {
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const res = await fetch(`${CODE_LAB_BASE_URL}/api/code-lab`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ code: verificationCode })
+    });
+
+    if (!res.ok) {
+      return { success: false, status: "VERIFICATION_FAILED" };
+    }
+
+    const resData = await res.json();
+    const isSuccess = resData.status === 3 || resData.status === "SUCCESS";
+    return { success: isSuccess, status: isSuccess ? "SUCCESS" : "FAILED" };
+  } catch (verErr) {
+    console.error("[arena] Code verification request failed:", verErr);
+    return { success: false, status: "VERIFICATION_UNAVAILABLE" };
+  }
 }
 
 // Connection rate limiting to prevent JWT brute-forcing
@@ -731,17 +814,33 @@ io.on("connection", async (socket) => {
       const matchId = await redisClient.hget(`{arena}:socket:${socket.id}`, "matchId");
       if (!matchId || matchId !== data.matchId) return;
 
+      // The client's self-reported `passed` value is never authoritative.
+      // Verify the code server-side and store ONLY the server verdict.
+      if (!data.code || typeof data.code !== "string") {
+        return socket.emit("error", { message: "Code is required to record a test result" });
+      }
+
+      const initialMatchStr = await redisClient.get(`{arena}:match:${matchId}`);
+      if (!initialMatchStr) {
+        return socket.emit("error", { message: "Cannot record test result: match not found" });
+      }
+      const match = JSON.parse(initialMatchStr);
+      const topic = match.topic || "Arrays";
+
+      const verdict = await verifyCodeServerSide(data.code, data.language, topic, socket.data.token);
+      const serverPassed = verdict.success ? 1 : 0;
+
       await redisClient.hset(
         `{arena}:match:${matchId}:testResults`,
         socket.data.userId,
-        JSON.stringify({ passed: data.passed, total: data.total, status: data.status, failedAttempts: data.failedAttempts, timestamp: Date.now() })
+        JSON.stringify({ passed: serverPassed, total: 1, status: verdict.status, failedAttempts: data.failedAttempts, timestamp: Date.now() })
       );
 
       socket.to(data.matchId).emit("opponent_test_result", {
         userId: socket.data.userId,
-        passed: data.passed,
-        total: data.total,
-        status: data.status,
+        passed: serverPassed,
+        total: 1,
+        status: verdict.status,
         failedAttempts: data.failedAttempts
       });
     } catch (error) {
@@ -822,54 +921,19 @@ io.on("connection", async (socket) => {
         }
         const match = JSON.parse(initialMatchStr);
         const topic = match.topic || "Arrays";
-        const VERIFIED_TOPICS = new Set(["Arrays", "Strings"]);
 
-        let verificationCode = data.code || "";
-        const lang = (data.language || "javascript").toLowerCase();
-
-        if (!VERIFIED_TOPICS.has(topic)) {
-          return socket.emit("error", { message: `Match topic "${topic}" does not support server-side verification yet.` });
-        }
-
-        if (lang === "javascript" || lang === "js") {
-          if (topic === "Arrays") {
-            verificationCode += `\n;
-if (typeof twoSum !== 'function' || JSON.stringify(twoSum([2,7,11,15], 9)) !== '[0,1]' || JSON.stringify(twoSum([3,2,4], 6)) !== '[1,2]') {
-  throw new Error("Validation test cases failed!");
-}`;
-          } else if (topic === "Strings") {
-            verificationCode += `\n;
-if (typeof isAnagram !== 'function' || isAnagram("anagram", "nagaram") !== true || isAnagram("rat", "car") !== false) {
-  throw new Error("Validation test cases failed!");
-}`;
-          }
-        }
-
-        if (lang === "javascript" || lang === "js") {
-          const origin = socket.handshake.headers.origin || "http://localhost:3000";
-          try {
-            const res = await fetch(`${origin}/api/code-lab`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${socket.data.token}`
-              },
-              body: JSON.stringify({ code: verificationCode })
-            });
-
-            if (!res.ok) {
-              return socket.emit("error", { message: "Server-side code verification failed" });
-            }
-
-            const resData = await res.json();
-            const isSuccess = resData.status === 3 || resData.status === "SUCCESS";
-            if (!isSuccess) {
-              return socket.emit("error", { message: "Your code failed verification test cases!" });
-            }
-          } catch (verErr) {
-            console.error("[match_complete] Code verification request failed:", verErr);
-            return socket.emit("error", { message: "Verification service unavailable" });
-          }
+        // Re-verify the submitted code against a fixed, server-controlled base
+        // URL. The handshake `origin` is attacker-controlled (SSRF) and must
+        // never be used to build the verification URL. Non-JS languages and
+        // unverified topics fail closed — no server verdict means no win.
+        const verdict = await verifyCodeServerSide(data.code, data.language, topic, socket.data.token);
+        if (!verdict.success) {
+          const message = verdict.status === "UNSUPPORTED_LANGUAGE"
+            ? "This language does not support server-side verification yet. Please use JavaScript."
+            : verdict.status === "UNSUPPORTED_TOPIC"
+              ? `Match topic "${topic}" does not support server-side verification yet.`
+              : "Your code failed server-side verification test cases!";
+          return socket.emit("error", { message });
         }
 
         const resultStr = await redisClient.eval(

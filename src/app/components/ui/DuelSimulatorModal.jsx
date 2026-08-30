@@ -247,9 +247,7 @@ export default function DuelSimulatorModal({ isOpen, onClose, opponent, currentU
       const iAmWinner = data.winnerId === currentUserStats?.userId;
       setVictoryState(iAmWinner ? "victory" : "defeat");
       addLog(iAmWinner ? "VICTORY! You won the battle!" : "DEFEAT! Your opponent finished first.");
-      if (!iAmWinner) {
-        recordMatchResultToBackend(false);
-      }
+      recordMatchResultToBackend(iAmWinner);
     });
 
     newSocket.on("opponent_disconnected", (data) => {
@@ -257,6 +255,13 @@ export default function DuelSimulatorModal({ isOpen, onClose, opponent, currentU
       setVictoryState("victory");
       addLog("Your opponent disconnected. You win!");
       recordMatchResultToBackend(true);
+    });
+
+    newSocket.on("error", (err) => {
+      const message = err?.message || "An error occurred";
+      addLog(`Server: ${message}`);
+      setUserOutput((prev) => (prev ? prev + "\n" : "") + `Server: ${message}`);
+      setIsExecuting(false);
     });
 
     return () => {
@@ -338,22 +343,21 @@ export default function DuelSimulatorModal({ isOpen, onClose, opponent, currentU
       if (socket && opponent?.matchId) {
         socket.emit("test_result", {
           matchId: opponent.matchId,
-          status: data.status,
-          passed: isSuccess ? 1 : 0,
-          total: 1,
+          code: userCode,
+          language: language,
           failedAttempts: newFailedAttempts
         });
 
+        // Ask the server to verify the submission and complete the match.
+        // Victory is NOT decided locally — the authoritative `match_ended`
+        // event is emitted by the socket server only after it verifies the
+        // code server-side.
         if (data.status === 3 || data.status === "SUCCESS") {
           socket.emit("match_complete", {
             matchId: opponent.matchId,
             code: userCode,
             language: language
           });
-          setBattleFinished(true);
-          setVictoryState("victory");
-          addLog("VICTORY! You passed all tests and won!");
-          recordMatchResultToBackend(true);
         }
       }
     } catch (err) {

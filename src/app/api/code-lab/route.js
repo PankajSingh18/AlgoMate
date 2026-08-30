@@ -1,4 +1,4 @@
-import { getAuthenticatedUser } from "@/lib/auth";
+import { getAuthenticatedUser, verifySupabaseToken } from "@/lib/auth";
 import { sandboxLimiter } from "@/lib/rateLimit";
 import { executeCode } from "@/lib/sandbox/executor";
 import { EXECUTION_STATUS, EXECUTION_MESSAGES } from "@/lib/sandbox/errorCodes";
@@ -11,7 +11,19 @@ export async function POST(request) {
   try {
     const authResult = await getAuthenticatedUser();
 
-    if (!authResult.success) {
+    let user = authResult.success ? authResult.user : null;
+    if (!user) {
+      // The arena socket server verifies the user's JWT server-side (JWKS)
+      // and forwards it here for code verification. Accept a valid Bearer
+      // token as an alternative to the cookie session.
+      const authHeader = request.headers.get("authorization");
+      const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+      if (bearerToken) {
+        user = await verifySupabaseToken(bearerToken);
+      }
+    }
+
+    if (!user) {
       if (authResult.type === "CONFIG_ERROR" || authResult.type === "AUTH_PROVIDER_ERROR") {
         return jsonResponse({ error: "Authentication service unavailable" }, 500);
       }

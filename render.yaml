@@ -25,3 +25,9 @@ services:
     rootDir: arena-socket-server
     buildCommand: npm install
     startCommand: npm start
+    envVars:
+      # Fixed base URL of the web app used for server-side code verification.
+      # Must be set to the deployed app origin (e.g. https://algobuddy.vercel.app)
+      # so the arena socket server never trusts the client-supplied Origin header.
+      - key: CODE_LAB_BASE_URL
+        sync: false

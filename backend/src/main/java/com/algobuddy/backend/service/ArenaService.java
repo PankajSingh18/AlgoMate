@@ -43,6 +43,7 @@ public class ArenaService {
 
     private static final Logger log = LoggerFactory.getLogger(ArenaService.class);
     private static final UUID BOT_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final int MAX_DAILY_MATCH_RESULTS = 30;
 
     private final UserArenaProfileRepository profileRepository;
     private final ArenaMatchRepository matchRepository;
@@ -54,6 +55,15 @@ public class ArenaService {
         long recentCount = matchRepository.countRecentMatchResultsByUserId(userId, since);
         if (recentCount >= 3) {
             throw new IllegalStateException("Rate limit exceeded. Max 3 match results per minute.");
+        }
+    }
+
+    private void checkMatchResultDailyLimit(UUID userId) {
+        LocalDateTime since = LocalDateTime.now().minusDays(1);
+        long recentCount = matchRepository.countMatchResultsSinceByUserId(userId, since);
+        if (recentCount >= MAX_DAILY_MATCH_RESULTS) {
+            throw new IllegalStateException("Daily match-result limit exceeded. Max "
+                    + MAX_DAILY_MATCH_RESULTS + " match results per day.");
         }
     }
 
@@ -351,6 +361,7 @@ public class ArenaService {
     @CacheEvict(value = "arenaLeaderboard", allEntries = true)
     public void recordMatchResult(UUID requestingUserId, com.algobuddy.backend.dto.RecordMatchRequest request) {
         checkMatchResultRateLimit(requestingUserId);
+        checkMatchResultDailyLimit(requestingUserId);
 
         String matchIdStr = request.getMatchId();
         if (matchIdStr == null || matchIdStr.isEmpty()) {

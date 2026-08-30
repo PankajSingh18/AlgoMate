@@ -26,6 +26,9 @@ public interface ArenaMatchRepository extends JpaRepository<ArenaMatch, UUID> {
     @Query("SELECT COUNT(m) FROM ArenaMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.endTime IS NOT NULL AND m.endTime >= :since")
     long countRecentMatchResultsByUserId(@Param("userId") UUID userId, @Param("since") LocalDateTime since);
 
+    @Query("SELECT COUNT(m) FROM ArenaMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.endTime IS NOT NULL AND m.endTime >= :since")
+    long countMatchResultsSinceByUserId(@Param("userId") UUID userId, @Param("since") LocalDateTime since);
+
     @Query("SELECT COUNT(m) FROM ArenaMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.startTime >= :since")
     long countRecentInitiationsByUserId(@Param("userId") UUID userId, @Param("since") LocalDateTime since);
 
