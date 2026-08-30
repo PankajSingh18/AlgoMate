@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import ResetButton from "@/app/components/ui/resetButton";
 import GoButton from "@/app/components/ui/goButton";
 import PlaybackControls from "@/app/components/ui/PlaybackControls";
@@ -11,6 +11,7 @@ const MinMax = () => {
   const [arrayElements, setArrayElements] = useState("3, 5, 2, 9, 12, 5, 23, 23");
   const [inputNodes, setInputNodes] = useState([]);
   const [message, setMessage] = useState("Enter 8 comma-separated numbers for leaf nodes.");
+  const replayTimerRef = useRef(null);
 
   const frames = useMemo(() => {
     if (inputNodes.length === 0) return [];
@@ -20,6 +21,10 @@ const MinMax = () => {
   const engine = useAnimationEngine({ steps: frames, initialSpeed: 1000 });
 
   const handleReset = () => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
     setMessage("Enter 8 comma-separated numbers for leaf nodes.");
     setInputNodes([]);
     engine.reset();
@@ -54,13 +59,21 @@ const MinMax = () => {
   const togglePlay = () => {
     if (engine.currentStep === frames.length - 1 && frames.length > 0) {
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else if (engine.isPlaying) {
       engine.pause();
     } else {
       engine.play();
     }
   };
+
+  useEffect(() => () => {
+    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+  }, []);
 
   useVisualizerKeyboard({
     onStart: togglePlay,
