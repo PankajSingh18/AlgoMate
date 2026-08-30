@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import useVisualizerReset from "@/app/hooks/useVisualizerReset";
 import { AnimatePresence, motion } from "framer-motion";
 import { insertGenerator } from "@/features/algorithms/hashmap/hashmapInsertLogic";
@@ -20,13 +20,23 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
   const [insertValue, setInsertValue] = useState("");
   
   const [frames, setFrames] = useState([]);
+  const replayTimerRef = useRef(null);
+
+  const clearReplayTimer = useCallback(() => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
+  }, []);
 
   // Clear frames when mode changes
   useEffect(() => {
+    clearReplayTimer();
     setFrames([]);
-  }, [mode]);
+  }, [clearReplayTimer, mode]);
 
   useVisualizerReset(() => {
+    clearReplayTimer();
     setBaseHashMap(makeTable());
     setKeyInput("");
     setValueInput("");
@@ -127,6 +137,7 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
     const key = rawKey.trim();
     const value = rawValue.trim();
     if (!key || !value || engine.isPlaying) return;
+    clearReplayTimer();
 
     // Use the current baseHashMap to generate the next sequence
     const gen = insertGenerator(baseHashMap, key, value, TABLE_SIZE, hashFunction);
@@ -151,6 +162,7 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
   const handleSearch = () => {
     const key = keyInput.trim();
     if (!key || engine.isPlaying) return;
+    clearReplayTimer();
 
     const gen = searchGenerator(baseHashMap, key, TABLE_SIZE, hashFunction);
     const newFrames = generateFrames(gen);
@@ -163,6 +175,7 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
   const handleDelete = () => {
     const key = keyInput.trim();
     if (!key || engine.isPlaying) return;
+    clearReplayTimer();
 
     const gen = deleteGenerator(baseHashMap, key, TABLE_SIZE, hashFunction);
     const newFrames = generateFrames(gen);
@@ -173,6 +186,7 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
   };
 
   const handleClear = () => {
+    clearReplayTimer();
     setBaseHashMap(makeTable());
     setFrames([]);
     setKeyInput("");
@@ -182,10 +196,19 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
     engine.reset();
   };
 
+  const handlePlaybackReset = useCallback(() => {
+    clearReplayTimer();
+    engine.reset();
+  }, [clearReplayTimer, engine]);
+
   const togglePlay = () => {
     if (engine.currentStep === frames.length - 1 && frames.length > 0) {
+      clearReplayTimer();
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else if (engine.isPlaying) {
       engine.pause();
     } else {
@@ -193,11 +216,13 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
     }
   };
 
+  useEffect(() => clearReplayTimer, [clearReplayTimer]);
+
   useVisualizerKeyboard({
     onStart: togglePlay,
     onTogglePlayPause: togglePlay,
     sorting: engine.isPlaying,
-    onReset: engine.reset,
+    onReset: handlePlaybackReset,
     speed: engine.speed / 1000,
     onSpeedChange: (s) => engine.setSpeed(s * 1000),
     onStepForward: engine.stepForward,
@@ -468,7 +493,7 @@ const HashMapChainingVisualizer = ({ mode = "insert" }) => {
             onSpeedChange={(s) => engine.setSpeed(s * 1000)}
             onStepForward={engine.stepForward}
             onStepBackward={engine.stepBackward}
-            onReset={engine.reset}
+            onReset={handlePlaybackReset}
             progressText={frames.length > 0 ? `${engine.currentStep + 1} / ${frames.length}` : "0 / 0"}
             disabled={frames.length === 0}
           />
