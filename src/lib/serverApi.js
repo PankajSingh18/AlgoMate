@@ -62,7 +62,7 @@ export function getSupabaseRequestClient(request) {
         cookiesToSet.forEach(({ name, value, options }) => {
           request.cookies.set(name, value, {
             ...options,
-            sameSite: 'lax',
+            sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production',
           });
         });

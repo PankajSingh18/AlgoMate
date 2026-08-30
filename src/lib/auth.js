@@ -47,7 +47,11 @@ export async function getAuthenticatedUser() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
+              cookieStore.set(name, value, {
+                ...options,
+                sameSite: 'strict',
+                secure: process.env.NODE_ENV === 'production',
+              });
             });
           } catch (e) {
             // Can happen during GET requests or rendering in Next.js, which is expected/normal.

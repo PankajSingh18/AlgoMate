@@ -5,6 +5,8 @@ const log = createLogger("csrf");
 const CSRF_TOKEN_LENGTH = 32;
 const CSRF_SECRET_ENV = "CSRF_SECRET";
 const CSRF_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+const ANONYMOUS_BINDING = "anonymous";
+const SESSION_COOKIE_PATTERN = /^sb-.+-auth-token$/;
 
 let devSecret = null;
 
@@ -27,7 +29,44 @@ function getSecret() {
   return devSecret;
 }
 
-export async function generateCsrfToken() {
+/**
+ * Derives a stable per-session binding from the Supabase session cookie
+ * (sb-<project-ref>-auth-token). The raw cookie value is hashed so tokens
+ * are cryptographically bound to the session that minted them; a token
+ * obtained under one session can never validate against another.
+ * Accepts either a Next.js cookie store (getAll()) or an array of
+ * { name, value } cookies.
+ */
+export async function getSessionBindingFromCookies(cookiesList) {
+  const cookies =
+    typeof cookiesList?.getAll === "function"
+      ? cookiesList.getAll()
+      : Array.isArray(cookiesList)
+        ? cookiesList
+        : [];
+
+  const sessionCookie = cookies.find(
+    (c) =>
+      c &&
+      typeof c.name === "string" &&
+      SESSION_COOKIE_PATTERN.test(c.name) &&
+      typeof c.value === "string" &&
+      c.value.length > 0
+  );
+
+  if (!sessionCookie) return ANONYMOUS_BINDING;
+
+  const encoder = new TextEncoder();
+  const digest = await globalThis.crypto.subtle.digest(
+    "SHA-256",
+    encoder.encode(sessionCookie.value)
+  );
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export async function generateCsrfToken(binding = ANONYMOUS_BINDING) {
   const secret = getSecret();
   const array = new Uint8Array(CSRF_TOKEN_LENGTH);
   globalThis.crypto.getRandomValues(array);
@@ -43,14 +82,18 @@ export async function generateCsrfToken() {
     false,
     ["sign"],
   );
-  const sigBytes = await globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(`${randomValue}:${timestamp}`));
+  const sigBytes = await globalThis.crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(`${binding}:${randomValue}:${timestamp}`),
+  );
   const signature = Array.from(new Uint8Array(sigBytes))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
   return `${randomValue}.${timestamp}.${signature}`;
 }
 
-export async function validateCsrfTokenEdge(token) {
+export async function validateCsrfTokenEdge(token, binding = ANONYMOUS_BINDING) {
   if (!token || typeof token !== "string") return false;
   const parts = token.split(".");
   if (parts.length !== 3) return false;
@@ -68,7 +111,11 @@ export async function validateCsrfTokenEdge(token) {
     false,
     ["sign"],
   );
-  const sigBytes = await globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(`${randomValue}:${timestamp}`));
+  const sigBytes = await globalThis.crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(`${binding}:${randomValue}:${timestamp}`),
+  );
   const expected = Array.from(new Uint8Array(sigBytes))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

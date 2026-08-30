@@ -6,7 +6,7 @@ import {
   CSRF_COOKIE_NAME,
   CSRF_HEADER_NAME,
 } from "@/lib/csrfConstants";
-import { validateCsrfTokenEdge } from "@/lib/csrfToken";
+import { validateCsrfTokenEdge, getSessionBindingFromCookies } from "@/lib/csrfToken";
 import { jsonResponse, errorResponse, getSupabaseAdmin } from "@/lib/serverApi";
 import { RATE_LIMITS } from "@/config/rateLimits";
 import { escapeHtml } from "@/lib/shared-utils";
@@ -22,7 +22,8 @@ export async function POST(req) {
   if (!cookieToken || !headerToken || headerToken !== cookieToken) {
     return Response.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
-  if (!(await validateCsrfTokenEdge(cookieToken))) {
+  const binding = await getSessionBindingFromCookies(req.cookies);
+  if (!(await validateCsrfTokenEdge(cookieToken, binding))) {
     return Response.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 

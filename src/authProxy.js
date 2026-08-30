@@ -7,7 +7,7 @@ import {
   CSRF_COOKIE_NAME,
   CSRF_HEADER_NAME,
 } from "@/lib/csrfConstants";
-import { validateCsrfTokenEdge } from "@/lib/csrfToken";
+import { validateCsrfTokenEdge, getSessionBindingFromCookies } from "@/lib/csrfToken";
 import { getSupabaseConfig } from "@/lib/shared-utils";
 
 const SUPABASE_ENV_ERROR =
@@ -47,6 +47,7 @@ export async function proxy(request) {
             intermediateResponse.cookies.set(name, value, {
               ...options,
               secure: process.env.NODE_ENV === "production",
+              sameSite: "strict",
             }),
           );
         },
@@ -110,7 +111,11 @@ if (intermediateResponse) {
       );
     }
 
-    if (!(await validateCsrfTokenEdge(cookieToken))) {
+    // Tokens are bound to the current Supabase session; a token minted for a
+    // different session must not validate here.
+    const binding = await getSessionBindingFromCookies(request.cookies);
+
+    if (!(await validateCsrfTokenEdge(cookieToken, binding))) {
       return NextResponse.json(
         { error: "CSRF validation failed: invalid token signature" },
         { status: 403 },
