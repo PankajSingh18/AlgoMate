@@ -41,12 +41,22 @@ export default function Animation() {
         </label>
 
         <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="flower, flow, flight"
-          className="mt-2 w-full rounded-lg border p-3 outline-none focus:ring-2 focus:ring-pink-500"
-        />
+  type="text"
+  value={input}
+  onChange={(e) => setInput(e.target.value)}
+  placeholder="flower, flow, flight"
+  className="
+    mt-2 w-full rounded-lg border p-3 outline-none
+    bg-white text-black border-gray-300
+    placeholder:text-gray-400
+    focus:ring-2 focus:ring-pink-500
+
+    dark:bg-gray-800
+    dark:text-white
+    dark:border-gray-600
+    dark:placeholder:text-gray-400
+  "
+/>
       </div>
 
       <div className="space-y-4">
