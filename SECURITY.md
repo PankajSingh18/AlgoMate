@@ -1,43 +1,41 @@
 # Security Policy
 
-## Supported Versions
+## 📋 Supported Versions
 
 The following versions of **AlgoBuddy** are currently supported with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
 | main    | ✅ Yes             |
+| stable  | ✅ Yes             |
+| beta    | ⚠️ Limited support |
 
-## Reporting a Vulnerability
+## 🛡️ Content Security Policy (CSP)
 
-If you discover a security vulnerability in **AlgoBuddy**, please **do not open a public issue**.
+AlgoBuddy implements a **strict Content Security Policy** to protect against XSS, data injection, and other code execution attacks.
 
-Instead, report it responsibly by:
+### CSP Directives
 
-- 📧 Opening a **GitHub Private Security Advisory**
-- 📧 Reaching out to the maintainer directly via their [GitHub profile](https://github.com/PankajSingh34)
-- 💬 Sending a private message through GitHub's messaging or social links listed in the profile
+| Directive | Policy | Description |
+|-----------|--------|-------------|
+| `default-src` | `'self'` | Only allow resources from same origin |
+| `script-src` | `'self' 'nonce-{NONCE}' 'strict-dynamic'` | Nonce-based script loading |
+| `style-src` | `'self' 'nonce-{NONCE}'` | Nonce-based style loading |
+| `img-src` | `'self' data: blob: https:` | Secure image sources |
+| `connect-src` | `'self' https://*.supabase.co wss://*.supabase.co` | API connections |
+| `frame-src` | `'self' https://*.google.com` | OAuth and iframe sources |
+| `frame-ancestors` | `'none'` | Prevents clickjacking |
+| `form-action` | `'self'` | Restrict form submissions |
+| `base-uri` | `'self'` | Restrict base URL |
+| `upgrade-insecure-requests` | - | Force HTTPS |
+| `block-all-mixed-content` | - | Block mixed content |
+| `report-uri` | `/api/csp-report` | CSP violation reporting |
 
-### What to include in your report:
-- A clear description of the vulnerability
-- Steps to reproduce the issue
-- Potential impact assessment
-- Any suggested fix (optional but appreciated)
+### Nonce-Based Script Loading
 
-## Response Timeline
+AlgoBuddy uses **dynamic nonce** generation for scripts to prevent unauthorized code execution:
 
-| Action                        | Timeframe         |
-| ----------------------------- | ----------------- |
-| Acknowledgement of report     | Within 48 hours   |
-| Status update                 | Within 7 days     |
-| Patch / fix release           | Within 30 days    |
-
-## Responsible Disclosure
-
-We follow a **responsible disclosure** policy. Please give us adequate time to patch the issue before any public disclosure. We deeply appreciate security researchers who help keep **AlgoBuddy** safe. 🙏
-
-## References
-
-- [AlgoBuddy Repository](https://github.com/PankajSingh34/AlgoBuddy)
-- [GitHub Security Advisories](https://docs.github.com/en/code-security/security-advisories)
-- [Adding a Security Policy to your repo](https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository)
+```javascript
+// middleware.js
+const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+const cspWithNonce = cspPolicy.replace(/\{NONCE\}/g, nonce);
