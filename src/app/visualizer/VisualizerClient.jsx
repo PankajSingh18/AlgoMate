@@ -571,7 +571,11 @@ export default function VisualizerClient({initialSections = sections,}) {
     if (val.trim().length > 2) {
       setSearchHistory((prev) => {
         const updated = [val, ...prev.filter((h) => h !== val)].slice(0, 5);
-        localStorage.setItem("algobuddy_search_history", JSON.stringify(updated));
+        try {
+          localStorage.setItem("algobuddy_search_history", JSON.stringify(updated));
+        } catch {
+          // Keep the in-memory history when persistent storage is unavailable.
+        }
         return updated;
       });
     }
