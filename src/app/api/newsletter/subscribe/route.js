@@ -6,7 +6,14 @@ export async function POST(req) {
     return jsonResponse({ error: "CSRF validation failed: untrusted origin" }, 403);
   }
   try {
-    const { email } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return jsonResponse({ error: "Invalid JSON request body" }, 400);
+    }
+
+    const { email } = body || {};
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return jsonResponse({ error: "Invalid email address" }, 400);
