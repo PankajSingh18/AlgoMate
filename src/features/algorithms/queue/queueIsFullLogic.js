@@ -51,6 +51,7 @@ export function* enqueueGenerator(currentQueue, value, capacity) {
 
 export function* dequeueGenerator(currentQueue) {
   if (currentQueue.length === 0) {
+    yield { phase: 'error', action: 'dequeue', queue: [...currentQueue], explanation: 'Cannot dequeue, queue is empty!' };
     yield { type: 'error', message: 'Queue is empty!', isFull: false };
     return;
   }
