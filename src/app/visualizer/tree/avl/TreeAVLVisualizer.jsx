@@ -172,18 +172,18 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
   }, []);
 
   const stepForward = useCallback(() => {
-    if (lockRef.current) return;
     setIsAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     if (stepIdxRef.current < steps.length - 1) {
       setCurrentStepIdx((prev) => prev + 1);
     }
   }, [steps.length]);
 
   const stepBackward = useCallback(() => {
-    if (lockRef.current) return;
     setIsAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     if (stepIdxRef.current > 0) {
       setCurrentStepIdx((prev) => prev - 1);
     }

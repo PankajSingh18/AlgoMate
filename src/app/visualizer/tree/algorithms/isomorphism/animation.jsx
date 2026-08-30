@@ -93,8 +93,8 @@ export default function IsomorphismAnimation() {
     const nextIdx = currentStepIdx === -1 || currentStepIdx >= steps.length - 1 ? 0 : currentStepIdx + 1;
     setCurrentStepIdx(nextIdx);
   };
-  const stepForward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); if (stepIdxRef.current < steps.length - 1) setCurrentStepIdx(p => p + 1); };
-  const stepBackward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); if (stepIdxRef.current > 0) setCurrentStepIdx(p => p - 1); };
+  const stepForward = () => { setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); lockRef.current = false; if (stepIdxRef.current < steps.length - 1) setCurrentStepIdx(p => p + 1); };
+  const stepBackward = () => { setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); lockRef.current = false; if (stepIdxRef.current > 0) setCurrentStepIdx(p => p - 1); };
   const resetPlayback = () => {
     setAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);

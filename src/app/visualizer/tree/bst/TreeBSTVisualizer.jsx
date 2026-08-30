@@ -525,9 +525,9 @@ export default function TreeBSTVisualizer({ initialMode }) {
   };
 
   const stepForward = () => {
-    if (lockRef.current) return;
     setIsAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     if (stepIdxRef.current < steps.length - 1) {
       setCurrentStepIdx(prev => prev + 1);
       if (stepIdxRef.current === steps.length - 2 && (mode === "insertion" || mode === "deletion")) {
@@ -537,9 +537,9 @@ export default function TreeBSTVisualizer({ initialMode }) {
   };
 
   const stepBackward = () => {
-    if (lockRef.current) return;
     setIsAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     if (stepIdxRef.current > 0) {
       setCurrentStepIdx(prev => prev - 1);
     }
