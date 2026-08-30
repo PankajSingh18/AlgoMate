@@ -67,7 +67,10 @@ export function useNotesManager() {
   // Save notes on state change
   const saveNotes = useCallback((newNotes) => {
     setNotes(newNotes);
-    localStorage.setItem("algobuddy-notebook", JSON.stringify(newNotes));
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("algobuddy-notebook", JSON.stringify(newNotes));
+    } catch {}
   }, []);
 
   // Detect current topic from path or queries
