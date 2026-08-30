@@ -21,9 +21,7 @@ const MCTSAnim = () => {
   useEffect(() => { saveToStorage("mcts-explore-c", exploreC); }, [exploreC]);
   useEffect(() => { saveToStorage("mcts-sim-size", simSize); }, [simSize]);
   useEffect(() => {
-    const savedSessions = JSON.parse(
-      localStorage.getItem("mcts-session-history") || "[]"
-    );
+    const savedSessions = loadFromStorage("mcts-session-history", []);
     setSessionHistory(savedSessions);
   }, []);
 
