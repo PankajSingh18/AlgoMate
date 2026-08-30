@@ -280,10 +280,8 @@ export default function TreeBSTVisualizer({ initialMode }) {
   const timerRef = useRef(null);
   const lockRef = useRef(false);
   const stepIdxRef = useRef(currentStepIdx);
-  const isAnimatingRef = useRef(isAnimating);
 
   useEffect(() => { stepIdxRef.current = currentStepIdx; }, [currentStepIdx]);
-  useEffect(() => { isAnimatingRef.current = isAnimating; }, [isAnimating]);
 
   const resetPlayback = useCallback(() => {
     setIsAnimating(false);

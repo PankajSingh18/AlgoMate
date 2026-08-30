@@ -49,10 +49,8 @@ export default function IsomorphismAnimation() {
   const timerRef = useRef(null);
   const lockRef = useRef(false);
   const stepIdxRef = useRef(currentStepIdx);
-  const animatingRef = useRef(animating);
 
   useEffect(() => { stepIdxRef.current = currentStepIdx; }, [currentStepIdx]);
-  useEffect(() => { animatingRef.current = animating; }, [animating]);
 
   useVisualizerReset(() => {
     if (timerRef.current) clearTimeout(timerRef.current);

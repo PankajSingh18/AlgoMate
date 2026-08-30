@@ -69,11 +69,9 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
   const timerRef = useRef(null);
   const lockRef = useRef(false);
   const stepIdxRef = useRef(currentStepIdx);
-  const isAnimatingRef = useRef(isAnimating);
   const { speed, setSpeed } = usePlayback(1);
 
   useEffect(() => { stepIdxRef.current = currentStepIdx; }, [currentStepIdx]);
-  useEffect(() => { isAnimatingRef.current = isAnimating; }, [isAnimating]);
 
   const resetPlayback = useCallback(() => {
     setIsAnimating(false);
