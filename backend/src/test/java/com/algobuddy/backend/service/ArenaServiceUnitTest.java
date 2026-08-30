@@ -9,7 +9,7 @@ import com.algobuddy.backend.repository.ArenaMatchRepository;
 import com.algobuddy.backend.repository.UserArenaProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import org.mockito.Mockito;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
@@ -21,10 +21,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ArenaServiceUnitTest {
-
+    
     private UserArenaProfileRepository profileRepository;
     private ArenaMatchRepository matchRepository;
     private CacheManager cacheManager;
@@ -185,14 +186,14 @@ public class ArenaServiceUnitTest {
                 .isWinner(true)
                 .build();
 
-        UserArenaProfile p1Profile = UserArenaProfile.builder().userId(p1Id).xp(100).rating(1200).build();
-        UserArenaProfile p2Profile = UserArenaProfile.builder().userId(p2Id).xp(100).rating(1200).build();
+       UserArenaProfile p1Profile = UserArenaProfile.builder().userId(p1Id).xp(100).rating(1200).build();
+        UserArenaProfile botProfile = UserArenaProfile.builder().userId(botId).xp(0).rating(1000).build();
 
         when(matchRepository.findByMatchId(matchId)).thenReturn(Optional.of(match));
         when(profileRepository.findById(p1Id)).thenReturn(Optional.of(p1Profile));
-        when(profileRepository.findById(p2Id)).thenReturn(Optional.of(p2Profile));
+        Mockito.lenient().when(profileRepository.findById(botId)).thenReturn(Optional.of(botProfile));
         when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
-
+        
         // Create a spy of arenaService to mock verifyMatchResult
         ArenaService spyService = spy(arenaService);
         doReturn(p1Id).when(spyService).verifyMatchResult(matchId, p1Id);
