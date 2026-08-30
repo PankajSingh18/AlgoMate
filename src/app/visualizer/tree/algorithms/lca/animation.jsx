@@ -46,7 +46,7 @@ export default function LCAAnimation() {
   useEffect(() => { animatingRef.current = animating; }, [animating]);
 
   useVisualizerReset(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
     setTargetP("5");
     setTargetQ("1");
@@ -76,23 +76,24 @@ export default function LCAAnimation() {
     lockRef.current = true;
     timerRef.current = setTimeout(() => {
       lockRef.current = false;
+      timerRef.current = null;
       setCurrentStepIdx(p => p + 1);
     }, 1600 / speed);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    return () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } };
   }, [animating, currentStepIdx, steps, speed]);
 
-  const pauseVisualizer = () => { setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); lockRef.current = false; };
+  const pauseVisualizer = () => { setAnimating(false); if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } lockRef.current = false; };
   const startVisualizer = () => {
     if (steps.length === 0) return;
     setAnimating(true);
     const nextIdx = currentStepIdx === -1 || currentStepIdx >= steps.length - 1 ? 0 : currentStepIdx + 1;
     setCurrentStepIdx(nextIdx);
   };
-  const stepForward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); if (stepIdxRef.current < steps.length - 1) setCurrentStepIdx(p => p + 1); };
-  const stepBackward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); if (stepIdxRef.current > 0) setCurrentStepIdx(p => p - 1); };
+  const stepForward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } if (stepIdxRef.current < steps.length - 1) setCurrentStepIdx(p => p + 1); };
+  const stepBackward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } if (stepIdxRef.current > 0) setCurrentStepIdx(p => p - 1); };
   const resetPlayback = () => {
     setAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
     setCurrentStepIdx(-1);
     setMessage("Playback reset.");

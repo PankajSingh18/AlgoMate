@@ -77,7 +77,7 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
 
   const resetPlayback = useCallback(() => {
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
     setSteps([]);
     setCurrentStepIdx(-1);
@@ -167,14 +167,14 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
 
   const pauseVisualizer = useCallback(() => {
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
   }, []);
 
   const stepForward = useCallback(() => {
     if (lockRef.current) return;
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     if (stepIdxRef.current < steps.length - 1) {
       setCurrentStepIdx((prev) => prev + 1);
     }
@@ -183,7 +183,7 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
   const stepBackward = useCallback(() => {
     if (lockRef.current) return;
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     if (stepIdxRef.current > 0) {
       setCurrentStepIdx((prev) => prev - 1);
     }
@@ -191,7 +191,7 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
 
   const handleResetPlayback = useCallback(() => {
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
     setCurrentStepIdx(-1);
     setSteps([]);
@@ -213,6 +213,7 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
 
     timerRef.current = setTimeout(() => {
       lockRef.current = false;
+      timerRef.current = null;
       if (stepIdxRef.current < steps.length - 1) {
         setCurrentStepIdx((prev) => prev + 1);
       } else {
@@ -225,7 +226,7 @@ export default function TreeAVLVisualizer({ initialMode = "avl" }) {
     }, 1800 / speed);
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     };
   }, [currentStepIdx, isAnimating, speed, steps, targetTreeRoot]);
 

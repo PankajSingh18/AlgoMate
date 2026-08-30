@@ -287,7 +287,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
 
   const resetPlayback = useCallback(() => {
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
     setCurrentStepIdx(-1);
     setSteps([]);
@@ -500,6 +500,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
 
     timerRef.current = setTimeout(() => {
       lockRef.current = false;
+      timerRef.current = null;
       if (stepIdxRef.current < steps.length - 1) {
         setCurrentStepIdx(prev => prev + 1);
       } else {
@@ -514,20 +515,20 @@ export default function TreeBSTVisualizer({ initialMode }) {
     }, 1800 / speed);
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     };
   }, [isAnimating, currentStepIdx, steps, speed, targetTreeRoot, mode]);
 
   const pauseVisualizer = () => {
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     lockRef.current = false;
   };
 
   const stepForward = () => {
     if (lockRef.current) return;
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     if (stepIdxRef.current < steps.length - 1) {
       setCurrentStepIdx(prev => prev + 1);
       if (stepIdxRef.current === steps.length - 2 && (mode === "insertion" || mode === "deletion")) {
@@ -539,7 +540,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
   const stepBackward = () => {
     if (lockRef.current) return;
     setIsAnimating(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     if (stepIdxRef.current > 0) {
       setCurrentStepIdx(prev => prev - 1);
     }
@@ -655,7 +656,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
   useEffect(() => {
     generateRandomTree();
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
       lockRef.current = false;
     };
   }, [generateRandomTree]);
