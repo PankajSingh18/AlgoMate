@@ -23,12 +23,17 @@ export async function POST(request) {
     const cookieStore = await cookies();
     const supabase = getSupabaseServerClient(cookieStore);
 
-    const { data: existing } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from("bookmarks")
       .select("id")
       .eq("student_id", authResult.user.id)
       .eq("job_id", jobId)
       .maybeSingle();
+
+    if (lookupError) {
+      console.error("[/api/job-bookmarks POST] Supabase lookup error:", lookupError.message);
+      return jsonResponse({ error: lookupError.message }, 500);
+    }
 
     if (existing) {
       const { error: deleteError } = await supabase
