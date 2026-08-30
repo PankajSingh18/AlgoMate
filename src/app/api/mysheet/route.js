@@ -62,12 +62,14 @@ export async function POST(request) {
     const cookieStore = await cookies();
     const supabase = getSupabaseServerClient(cookieStore);
 
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabase
       .from("my_sheet")
       .select("added_at")
       .eq("user_id", authResult.user.id)
       .eq("problem_id", problemId)
       .maybeSingle();
+
+    if (existingError) return jsonResponse({ error: existingError.message }, 500);
 
     const row = {
       user_id: authResult.user.id,
