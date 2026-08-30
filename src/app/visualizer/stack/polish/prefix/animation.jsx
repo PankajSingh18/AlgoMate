@@ -110,7 +110,7 @@ const InfixToPrefixVisualizer = () => {
   useVisualizerKeyboard({
     onStart: undefined, 
     onReset: reset,
-    onSpeedChange: (s) => engine.setSpeed(s * 1000),
+    onSpeedChange: (s) => engine.setSpeed(s * 500),
     onTogglePlayPause: engine.isPlaying ? engine.pause : engine.play,
     speed: engine.speed / 500,
     sorting: engine.isPlaying,
