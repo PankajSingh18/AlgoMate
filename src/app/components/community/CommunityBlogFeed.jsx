@@ -1,9 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PenLine, ArrowRight, Clock, CalendarDays } from "lucide-react";
-import React, { useState, useEffect } from "react";
 
 const CATEGORIES = ["All", "Tutorial", "Experience", "Release", "Guide"];
 
