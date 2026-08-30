@@ -2,13 +2,54 @@
 
 import { useState } from "react";
 
+const HASH_BASE = 256;
+const HASH_MOD = 101;
+
+const rabinKarpSearch = (text, pattern) => {
+  const textLength = text.length;
+  const patternLength = pattern.length;
+  if (patternLength > textLength) return -1;
+
+  let patternHash = 0;
+  let windowHash = 0;
+  let highOrderMultiplier = 1;
+
+  for (let i = 0; i < patternLength - 1; i += 1) {
+    highOrderMultiplier = (highOrderMultiplier * HASH_BASE) % HASH_MOD;
+  }
+
+  for (let i = 0; i < patternLength; i += 1) {
+    patternHash = (HASH_BASE * patternHash + pattern.charCodeAt(i)) % HASH_MOD;
+    windowHash = (HASH_BASE * windowHash + text.charCodeAt(i)) % HASH_MOD;
+  }
+
+  for (let i = 0; i <= textLength - patternLength; i += 1) {
+    if (patternHash === windowHash && text.slice(i, i + patternLength) === pattern) {
+      return i;
+    }
+
+    if (i < textLength - patternLength) {
+      windowHash =
+        (HASH_BASE * (windowHash - text.charCodeAt(i) * highOrderMultiplier) +
+          text.charCodeAt(i + patternLength)) %
+        HASH_MOD;
+
+      if (windowHash < 0) {
+        windowHash += HASH_MOD;
+      }
+    }
+  }
+
+  return -1;
+};
+
 export default function Animation() {
   const [text, setText] = useState("ABABDABACDABABCABAB");
   const [pattern, setPattern] = useState("ABABCABAB");
   const [index, setIndex] = useState(-1);
 
   const runDemo = () => {
-    const found = text.indexOf(pattern);
+    const found = rabinKarpSearch(text, pattern);
     setIndex(found);
   };
 
