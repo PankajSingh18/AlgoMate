@@ -1,0 +1,19 @@
+# Default owners for the entire repository
+* @PankajSingh34
+
+# Security-related files
+SECURITY.md @PankajSingh34
+security-tests/ @PankajSingh34
+
+# Documentation
+docs/ @PankajSingh34
+README.md @PankajSingh34
+CONTRIBUTING.md @PankajSingh34
+
+# GitHub configuration
+.github/ @PankajSingh34
+
+# Core lib files
+src/lib/env.js @PankajSingh34
+src/lib/csrf.js @PankajSingh34
+src/lib/rateLimit/ @PankajSingh34
