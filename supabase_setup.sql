@@ -214,12 +214,15 @@ $$;
 -- ====================================================================
 -- Combined function: upsert progress and update streak atomically
 -- Wraps both operations in a single transaction to prevent partial failures
+-- p_local_date is the user's local calendar date (YYYY-MM-DD) so the streak
+-- advances against the user's own day boundary rather than the server's UTC.
 -- ====================================================================
 CREATE OR REPLACE FUNCTION upsert_progress_and_update_streak(
   p_user_id UUID,
   p_problem_id TEXT,
   p_status TEXT,
-  p_updated_at TIMESTAMPTZ
+  p_updated_at TIMESTAMPTZ,
+  p_local_date DATE DEFAULT NULL
 )
 RETURNS TABLE (current_streak INT, longest_streak INT)
 LANGUAGE plpgsql
@@ -229,8 +232,8 @@ DECLARE
   v_current INT;
   v_longest INT;
   v_last_active DATE;
-  v_today DATE := CURRENT_DATE;
-  v_yesterday DATE := CURRENT_DATE - 1;
+  v_today DATE := COALESCE(p_local_date, CURRENT_DATE);
+  v_yesterday DATE := COALESCE(p_local_date, CURRENT_DATE) - 1;
 BEGIN
   -- Get existing progress status
   SELECT status INTO v_existing_status
@@ -284,5 +287,49 @@ BEGIN
   END IF;
 
   RETURN QUERY SELECT COALESCE(v_current, 0), COALESCE(v_longest, 0);
+END;
+$$;
+
+-- ====================================================================
+-- Atomic activity type merge function
+-- Merges a new activity type into the comma-separated type list for a
+-- given user+date without the read-modify-write race that could drop
+-- concurrently recorded types. Mirrors the old JS merge semantics.
+-- ====================================================================
+CREATE OR REPLACE FUNCTION merge_activity_type(
+  p_user_id UUID,
+  p_activity_date DATE,
+  p_new_type TEXT
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_existing TEXT;
+  v_merged TEXT;
+BEGIN
+  SELECT type INTO v_existing
+  FROM user_activity
+  WHERE user_id = p_user_id AND activity_date = p_activity_date
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    INSERT INTO user_activity (user_id, activity_date, type)
+    VALUES (p_user_id, p_activity_date, p_new_type);
+    RETURN;
+  END IF;
+
+  -- Rebuild the comma-separated type list with the new type merged in,
+  -- de-duplicating entries so repeated visits don't grow the list.
+  SELECT string_agg(DISTINCT item, ',') INTO v_merged
+  FROM (
+    SELECT trim(unnest) AS item
+    FROM unnest(string_to_array(COALESCE(v_existing, '') || ',' || p_new_type, ',')) AS t(unnest)
+  ) AS items
+  WHERE trim(item) <> '';
+
+  UPDATE user_activity
+  SET type = v_merged
+  WHERE user_id = p_user_id AND activity_date = p_activity_date;
 END;
 $$;

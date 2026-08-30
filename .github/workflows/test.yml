@@ -35,6 +35,9 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - name: Check Supabase RPC signatures match SQL functions
+        run: node scripts/check-rpc-signatures.mjs
+
       - name: Install dependencies
         run: npm ci
 
