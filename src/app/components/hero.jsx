@@ -106,7 +106,7 @@ const HeroSection = () => {
               <Link
                 href="/visualizer"
                 onClick={handleStart}
-                className="group inline-flex items-center justify-center gap-2 h-[52px] min-h-[44px] w-full sm:w-auto px-8 rounded-full bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-[15px] font-bold hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-colors duration-200"
+                className="group inline-flex items-center justify-center gap-2 h-[52px] min-h-[44px] w-full sm:w-auto px-8 rounded-full bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-[15px] font-bold hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface-900"
               >
                 Start Visualizing
                 <ArrowRight className="w-4 h-4" />
@@ -118,7 +118,7 @@ const HeroSection = () => {
           <div className="flex-shrink-0 flex items-center justify-center w-full lg:w-auto px-4 sm:px-0">
             <div className="group relative w-full max-w-[340px] sm:max-w-[460px] transform-gpu will-change-transform transition-all duration-300 ease-in-out">
               {/* main card */}
-              <div className="rounded-2xl border border-[#d1d7dc] dark:border-[#3e4143] bg-[#1c1d1f] shadow-2xl overflow-hidden transition-all duration-300 ease-in-out">
+              <div className="rounded-2xl border border-[#d1d7dc] dark:border-[#3e4143] bg-[#1c1d1f] dark:bg-[#0f0f14] shadow-2xl overflow-hidden transition-all duration-300 ease-in-out">
                 {/* title bar */}
                 <div className="flex items-center gap-2 px-4 py-3 bg-[#2d2f31] border-b border-[#3e4143]">
                   <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
