@@ -107,9 +107,8 @@ async function fetchCodeChef(username) {
     return NextResponse.json({ error: `CodeChef user "${username}" not found` }, { status: 404 });
   }
 
-  // stars come as a string like "3★" — extract the number
-  const starsRaw = json.stars ?? "0★";
-  const stars = parseInt(starsRaw.replace("★", ""), 10) || 0;
+  const starsRaw = String(json.stars ?? "0");
+  const stars = parseInt(starsRaw.match(/\d+/)?.[0] || "0", 10);
 
   return NextResponse.json({ platform: "codechef", username, value: stars });
 }
