@@ -266,6 +266,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
   const [mode, setMode] = useState(initialMode);
   const [root, setRoot] = useState(null);
   const [targetTreeRoot, setTargetTreeRoot] = useState(null);
+  const [operationBaseRoot, setOperationBaseRoot] = useState(null);
   const [inputValue, setInputValue] = useState("");
   const [activeOperationValue, setActiveOperationValue] = useState(null);
   const [steps, setSteps] = useState([]);
@@ -315,6 +316,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
     if (mode === "insertion") {
       resetPlayback();
       setActiveOperationValue(val);
+      setOperationBaseRoot(root);
       const newRoot = insertNodeFunctional(root, val);
       setTargetTreeRoot(newRoot);
       const preCalculated = generateInsertSteps(root, val);
@@ -367,6 +369,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
 
     resetPlayback();
     setActiveOperationValue(val);
+    setOperationBaseRoot(root);
     const newRoot = deleteNodeFunctional(root, val);
     setTargetTreeRoot(newRoot);
     const preCalculated = generateDeleteSteps(root, val);
@@ -390,6 +393,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
     });
     setRoot(newRoot);
     setTargetTreeRoot(newRoot);
+    setOperationBaseRoot(null);
     setMessage(`Generated beautiful BST with ${sequence.length} nodes.`);
   }, [resetPlayback]);
 
@@ -404,6 +408,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
       });
       setRoot(newRoot);
       setTargetTreeRoot(newRoot);
+      setOperationBaseRoot(null);
       setMessage(`Generated custom BST with ${parsedArray.length} nodes.`);
     }
   }, [generateRandomTree, resetPlayback]);
@@ -541,6 +546,13 @@ export default function TreeBSTVisualizer({ initialMode }) {
     setIsAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);
     if (stepIdxRef.current > 0) {
+      if (
+        stepIdxRef.current === steps.length - 1 &&
+        (mode === "insertion" || mode === "deletion") &&
+        operationBaseRoot
+      ) {
+        setRoot(operationBaseRoot);
+      }
       setCurrentStepIdx(prev => prev - 1);
     }
   };
@@ -548,6 +560,7 @@ export default function TreeBSTVisualizer({ initialMode }) {
   const handleResetTree = () => {
     setRoot(null);
     setTargetTreeRoot(null);
+    setOperationBaseRoot(null);
     resetPlayback();
     setMessage("Tree has been cleared. Add nodes or click Generate.");
   };
