@@ -27,10 +27,14 @@ export function getStoredPreferences() {
 
 export function saveStoredPreferences(preferences) {
     if (typeof window === "undefined") return;
+    try {
     window.localStorage.setItem(
     CONSENT_PREFERENCES_KEY,
     JSON.stringify({ ...preferences, essential: true })
     );
+    } catch {
+    // Storage can be unavailable in private mode or locked-down browsers.
+    }
     window.dispatchEvent(new Event(CONSENT_UPDATED_EVENT));
 }
 
