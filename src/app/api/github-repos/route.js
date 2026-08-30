@@ -34,6 +34,9 @@ export async function GET(request) {
     if (!res.ok) throw new Error("GitHub API error");
 
     const data = await res.json();
+    if (!Array.isArray(data)) {
+      return NextResponse.json({ error: "Unexpected GitHub API response" }, { status: 502 });
+    }
 
     const repos = data
       .filter((repo) => !repo.fork)
