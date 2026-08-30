@@ -10,9 +10,13 @@ export default function AlgorithmNotes() {
 
   // Load saved notes
   useEffect(() => {
-    const savedNotes = localStorage.getItem("algorithm-notes");
-    if (savedNotes) {
-      setNotes(JSON.parse(savedNotes));
+    try {
+      const savedNotes = localStorage.getItem("algorithm-notes");
+      if (savedNotes) {
+        setNotes(JSON.parse(savedNotes));
+      }
+    } catch {
+      setNotes([]);
     }
   }, []);
 
