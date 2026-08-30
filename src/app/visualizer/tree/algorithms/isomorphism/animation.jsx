@@ -105,6 +105,8 @@ export default function IsomorphismAnimation() {
 
   const handleCheck = () => {
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     const newSteps = generateIsomorphismSteps();
     setSteps(newSteps);
     setCurrentStepIdx(0);

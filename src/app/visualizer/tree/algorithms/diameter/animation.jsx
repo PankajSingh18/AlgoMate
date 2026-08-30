@@ -96,6 +96,8 @@ export default function DiameterAnimation() {
 
   const handleFindDiameter = () => {
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
 
     const newSteps = generateDiameterSteps();
 

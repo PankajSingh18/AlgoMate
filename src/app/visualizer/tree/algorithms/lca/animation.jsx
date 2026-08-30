@@ -106,6 +106,8 @@ export default function LCAAnimation() {
       return;
     }
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
 
     const sequence = generateLcaSequence("3", targetP, targetQ, EDGES);
     const newSteps = [];
