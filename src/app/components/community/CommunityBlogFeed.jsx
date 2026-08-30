@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PenLine, ArrowRight, Clock, CalendarDays } from "lucide-react";
-import React, { useState, useEffect } from "react";
 
 const CATEGORIES = ["All", "Tutorial", "Experience", "Release", "Guide"];
 
@@ -105,18 +104,6 @@ function BlogCard({ post }) {
     </motion.article>
   );
 }
-
-<div className="mb-8">
-  <h3 className="text-lg font-bold mb-3">
-    Recommended For You
-  </h3>
-
-  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {recommendedPosts.slice(0, 3).map((post) => (
-      <BlogCard key={post.id} post={post} />
-    ))}
-  </div>
-</div>
 
 export default function CommunityBlogFeed({ loading = false }) {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -220,6 +207,20 @@ export default function CommunityBlogFeed({ loading = false }) {
           <p className="py-12 text-center text-sm text-[var(--color-muted)]">
             No posts found in this category.
           </p>
+        )}
+
+        {!loading && (
+          <div className="mt-8">
+            <h3 className="mb-3 text-lg font-bold text-[var(--udemy-text)] dark:text-[var(--udemy-dark-text)]">
+              Recommended For You
+            </h3>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recommendedPosts.slice(0, 3).map((post) => (
+                <BlogCard key={post.id} post={post} />
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mt-8 text-center">
