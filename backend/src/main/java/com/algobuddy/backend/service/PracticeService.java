@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,13 +28,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PracticeService {
 
-
     private final UserProgressRepository progressRepository;
     private final UserPracticeStatsRepository statsRepository;
 
     @Autowired
     private ApplicationContext applicationContext;
-
 
     @Transactional(readOnly = true)
     public ProgressResponse getUserProgress(@NonNull UUID userId) {
@@ -170,27 +169,77 @@ public class PracticeService {
 
         LocalDate today = clientLocalDate != null ? clientLocalDate : LocalDate.now();
         LocalDate lastActive = stats.getLastActiveDate();
+        int targetGoal = stats.getDailyTargetGoal() != null ? stats.getDailyTargetGoal() : 1;
+
+        // Ignore out of order / past updates
+        if (lastActive != null && today.isBefore(lastActive)) {
+            return;
+        }
 
         if (lastActive == null) {
-            stats.setCurrentStreak(1);
-            stats.setLongestStreak(1);
+            // First time setup
             stats.setLastActiveDate(today);
-        } else if (today.isBefore(lastActive)) {
-            // Out of order update (e.g. past update). Keep current stats and lastActiveDate.
-            return;
-        } else if (lastActive.equals(today.minusDays(1))) {
-            // Consecutive day
-            stats.setCurrentStreak(stats.getCurrentStreak() + 1);
-            if (stats.getCurrentStreak() > stats.getLongestStreak()) {
-                stats.setLongestStreak(stats.getCurrentStreak());
+            stats.setDailyProgressCount(1);
+            if (1 >= targetGoal) {
+                stats.setCurrentStreak(1);
+                stats.setLongestStreak(Math.max(1, stats.getLongestStreak()));
             }
-            stats.setLastActiveDate(today);
-        } else if (!lastActive.equals(today)) {
-            // Streak broken (not today, not yesterday, and not in the past)
-            stats.setCurrentStreak(1);
-            stats.setLastActiveDate(today);
+        } else if (lastActive.equals(today)) {
+            // Same day activity: increment progress
+            int newProgress = (stats.getDailyProgressCount() != null ? stats.getDailyProgressCount() : 0) + 1;
+            stats.setDailyProgressCount(newProgress);
+
+            // Grace Period Recovery check (2x target goal required)
+            if (Boolean.TRUE.equals(stats.getInGracePeriod()) && newProgress >= targetGoal * 2) {
+                stats.setInGracePeriod(false);
+                stats.setCurrentStreak(stats.getCurrentStreak() + 2); // Recover missed day + today
+                if (stats.getCurrentStreak() > stats.getLongestStreak()) {
+                    stats.setLongestStreak(stats.getCurrentStreak());
+                }
+            } 
+            // Standard target goal threshold reached for today
+            else if (!Boolean.TRUE.equals(stats.getInGracePeriod()) && newProgress == targetGoal) {
+                stats.setCurrentStreak(stats.getCurrentStreak() + 1);
+                if (stats.getCurrentStreak() > stats.getLongestStreak()) {
+                    stats.setLongestStreak(stats.getCurrentStreak());
+                }
+            }
+        } else {
+            long daysBetween = ChronoUnit.DAYS.between(lastActive, today);
+
+            if (daysBetween == 1) {
+                // Consecutive day activity
+                stats.setLastActiveDate(today);
+                stats.setDailyProgressCount(1);
+
+                if (1 >= targetGoal) {
+                    stats.setCurrentStreak(stats.getCurrentStreak() + 1);
+                    if (stats.getCurrentStreak() > stats.getLongestStreak()) {
+                        stats.setLongestStreak(stats.getCurrentStreak());
+                    }
+                }
+            } else if (daysBetween == 2 && !Boolean.TRUE.equals(stats.getInGracePeriod())) {
+                // Missed exactly 1 day -> enter Grace Period
+                stats.setInGracePeriod(true);
+                stats.setLastActiveDate(today);
+                stats.setDailyProgressCount(1);
+
+                // Immediate recovery check if targetGoal == 1/2 and 1 progress hits 2x target
+                if (1 >= targetGoal * 2) {
+                    stats.setInGracePeriod(false);
+                    stats.setCurrentStreak(stats.getCurrentStreak() + 2);
+                    if (stats.getCurrentStreak() > stats.getLongestStreak()) {
+                        stats.setLongestStreak(stats.getCurrentStreak());
+                    }
+                }
+            } else {
+                // Gap > 2 days or grace period expired -> reset streak
+                stats.setInGracePeriod(false);
+                stats.setLastActiveDate(today);
+                stats.setDailyProgressCount(1);
+                stats.setCurrentStreak(1 >= targetGoal ? 1 : 0);
+            }
         }
-        // If lastActive.equals(today), do nothing (streak already incremented today)
 
         statsRepository.save(stats);
     }

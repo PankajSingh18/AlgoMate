@@ -34,16 +34,42 @@ public class UserPracticeStats {
     @Column(name = "visualized_count")
     private Integer visualizedCount = 0;
 
+    @Column(name = "daily_target_goal")
+    private Integer dailyTargetGoal = 1;
+
+    @Column(name = "daily_progress_count")
+    private Integer dailyProgressCount = 0;
+
+    @Column(name = "in_grace_period")
+    private Boolean inGracePeriod = false;
+
     @Version
     @Column(name = "version")
     private Integer version = 0;
 
+    // Existing 5-arg constructor preserved for backward compatibility in existing tests
     public UserPracticeStats(UUID userId, Integer currentStreak, Integer longestStreak, LocalDate lastActiveDate, Integer visualizedCount) {
         this.userId = userId;
         this.currentStreak = currentStreak;
         this.longestStreak = longestStreak;
         this.lastActiveDate = lastActiveDate;
         this.visualizedCount = visualizedCount;
+        this.dailyTargetGoal = 1;
+        this.dailyProgressCount = 0;
+        this.inGracePeriod = false;
+        this.version = 0;
+    }
+
+    // Overloaded constructor including customizable goal fields
+    public UserPracticeStats(UUID userId, Integer currentStreak, Integer longestStreak, LocalDate lastActiveDate, Integer visualizedCount, Integer dailyTargetGoal, Integer dailyProgressCount, Boolean inGracePeriod) {
+        this.userId = userId;
+        this.currentStreak = currentStreak;
+        this.longestStreak = longestStreak;
+        this.lastActiveDate = lastActiveDate;
+        this.visualizedCount = visualizedCount;
+        this.dailyTargetGoal = (dailyTargetGoal != null && dailyTargetGoal > 0) ? dailyTargetGoal : 1;
+        this.dailyProgressCount = (dailyProgressCount != null) ? dailyProgressCount : 0;
+        this.inGracePeriod = (inGracePeriod != null) ? inGracePeriod : false;
         this.version = 0;
     }
 }

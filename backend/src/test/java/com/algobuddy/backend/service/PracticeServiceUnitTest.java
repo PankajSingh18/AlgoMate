@@ -5,6 +5,7 @@ import com.algobuddy.backend.repository.UserPracticeStatsRepository;
 import com.algobuddy.backend.repository.UserProgressRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -89,8 +90,7 @@ public class PracticeServiceUnitTest {
                 maxConcurrentThreadsInCriticalSection.set(active);
             }
 
-            // Return a copy or the actual object. In hibernate, since it is a database transaction,
-            // each transaction gets the database state at the time of SELECT FOR UPDATE.
+            // Return a copy of the stats state at the time of locking
             UserPracticeStats currentStatsState = new UserPracticeStats(
                     sharedStats.getUserId(),
                     sharedStats.getCurrentStreak(),
@@ -207,5 +207,34 @@ public class PracticeServiceUnitTest {
         assertEquals(5, stats.getLongestStreak());
         assertEquals(clientFuture, stats.getLastActiveDate());
         verify(statsRepository, times(1)).save(stats);
+    }
+
+    @Test
+    public void testUpdateStreakLongestStreakExpansionAndCapBoundaries() {
+        UUID userId = UUID.randomUUID();
+        LocalDate fixedToday = LocalDate.of(2026, 7, 21);
+        
+        // Scenario 1: currentStreak equals longestStreak (5 == 5). Both should scale to 6.
+        UserPracticeStats matchingStats = new UserPracticeStats(userId, 5, 5, fixedToday.minusDays(1), 0);
+
+        doNothing().when(statsRepository).insertStatsIfNotExists(userId);
+        when(statsRepository.findAndLockByUserId(userId)).thenReturn(Optional.of(matchingStats));
+
+        practiceService.updateStreak(userId, fixedToday);
+
+        assertEquals(6, matchingStats.getCurrentStreak(), "Current streak should increment to 6");
+        assertEquals(6, matchingStats.getLongestStreak(), "Longest streak should expand to 6 when current streak exceeds it");
+        verify(statsRepository, times(1)).save(matchingStats);
+
+        // Scenario 2: currentStreak is below longestStreak (3 < 10).
+        // Incrementing currentStreak to 4 should NOT change longestStreak from 10.
+        UserPracticeStats lowerCurrentStats = new UserPracticeStats(userId, 3, 10, fixedToday.minusDays(1), 0);
+        when(statsRepository.findAndLockByUserId(userId)).thenReturn(Optional.of(lowerCurrentStats));
+
+        practiceService.updateStreak(userId, fixedToday);
+
+        assertEquals(4, lowerCurrentStats.getCurrentStreak(), "Current streak should increment to 4");
+        assertEquals(10, lowerCurrentStats.getLongestStreak(), "Longest streak should remain capped at 10");
+        verify(statsRepository, times(1)).save(lowerCurrentStats);
     }
 }
