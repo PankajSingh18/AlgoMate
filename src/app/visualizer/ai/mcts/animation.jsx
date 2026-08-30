@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Play, Pause } from "lucide-react";
 import ResetButton from "@/app/components/ui/resetButton";
 import GoButton from "@/app/components/ui/goButton";
@@ -17,6 +17,7 @@ const MCTSAnim = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [sessionHistory, setSessionHistory] = useState([]);
+  const replayTimerRef = useRef(null);
 
   useEffect(() => { saveToStorage("mcts-explore-c", exploreC); }, [exploreC]);
   useEffect(() => { saveToStorage("mcts-sim-size", simSize); }, [simSize]);
@@ -56,6 +57,10 @@ const MCTSAnim = () => {
   const engine = useAnimationEngine({ steps: frames, initialSpeed: 1000 });
 
   const reset = useCallback(() => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
     if (engine.currentStep > 0) {
       saveSession(engine.currentStep);
     }
@@ -77,7 +82,11 @@ const MCTSAnim = () => {
   const togglePlay = () => {
     if (engine.currentStep === frames.length - 1 && frames.length > 0) {
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else if (engine.isPlaying) {
       engine.pause();
     } else {
@@ -122,12 +131,20 @@ const MCTSAnim = () => {
       : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200";
 
   const replaySession = (session) => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
     setExploreC(session.exploreC);
     setSimSize(session.simSize);
     setMessage(`Loaded session from ${session.timestamp}`);
     setMessageType("success");
     engine.reset();
   };
+
+  useEffect(() => () => {
+    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+  }, []);
 
   const currentFrame = engine.currentStep >= 0 && engine.currentStep < frames.length 
     ? frames[engine.currentStep] 
