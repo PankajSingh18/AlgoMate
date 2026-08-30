@@ -52,6 +52,7 @@ export default function TreeHeapVisualizer({ initialHeapType = "min" }) {
   const [buildInput, setBuildInput] = useState("");
   const [steps, setSteps] = useState([]);
   const [message, setMessage] = useState("Build or insert values to start.");
+  const autoPlayTimerRef = useRef(null);
   const onStep = useCallback((step) => {
     setMessage(step.explanation);
   }, []);
@@ -59,6 +60,10 @@ export default function TreeHeapVisualizer({ initialHeapType = "min" }) {
   const engine = useAnimationEngine({ steps, onStep, initialSpeed: 1800 });
 
   const resetPlayback = useCallback(() => {
+    if (autoPlayTimerRef.current) {
+      clearTimeout(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = null;
+    }
     engine.reset();
     setSteps([]);
   }, [engine]);
@@ -81,10 +86,18 @@ export default function TreeHeapVisualizer({ initialHeapType = "min" }) {
   }, [initialHeapType, resetHeap]);
 
   const startPlayback = useCallback((nextArray, nextSteps) => {
+    if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
     setTargetHeapArray(nextArray);
     setSteps(nextSteps);
-    setTimeout(() => { engine.play(); }, 50);
+    autoPlayTimerRef.current = setTimeout(() => {
+      autoPlayTimerRef.current = null;
+      engine.play();
+    }, 50);
   }, [engine]);
+
+  useEffect(() => () => {
+    if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+  }, []);
 
   const handleInsert = useCallback(() => {
     const value = parseInt(inputValue, 10);
