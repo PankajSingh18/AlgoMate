@@ -1,0 +1,81 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-pr-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        continue-on-error: true
+
+      - name: Check PR title format
+        id: pr-title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = context.payload.pull_request.title;
+            const validPrefixes = ['feat:', 'fix:', 'docs:', 'style:', 'refactor:', 'perf:', 'test:', 'chore:', 'ci:', 'security:', 'accessibility:', 'ui:', 'devx:'];
+            const hasValidPrefix = validPrefixes.some(prefix => title.toLowerCase().startsWith(prefix));
+            if (!hasValidPrefix) {
+              const prefixes = validPrefixes.map(p => `"${p}"`).join(', ');
+              core.warning(`PR title should start with one of: ${prefixes}. Example: "fix: resolve navbar overflow on mobile"`);
+            }
+
+      - name: Check PR description length
+        id: pr-description
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = context.payload.pull_request.body || '';
+            if (body.length < 30) {
+              core.warning('PR description is too short. Please provide a meaningful description of your changes.');
+            }
+
+      - name: Check for large PRs
+        id: pr-size
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const additions = context.payload.pull_request.additions || 0;
+            const files = context.payload.pull_request.changed_files || 0;
+            if (files > 20 && additions > 500) {
+              core.warning(`This PR changes ${files} files with ${additions} additions. Consider splitting into smaller PRs for easier review.`);
+            }
+
+      - name: Add size label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const additions = context.payload.pull_request.additions || 0;
+            let label;
+            if (additions < 50) label = 'size:small';
+            else if (additions < 200) label = 'size:medium';
+            else if (additions < 500) label = 'size:large';
+            else label = 'size:xlarge';
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [label]
+            });

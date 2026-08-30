@@ -7,11 +7,83 @@ mentor:PankajSingh34:
 level:beginner:
   - ".*beginner.*"
 
+level:intermediate:
+  - ".*intermediate.*"
+
+level:advanced:
+  - ".*advanced.*"
+
+level:expert:
+  - ".*expert.*"
+
 type:bug:
   - ".*bug.*"
+  - ".*fix.*"
+  - ".*issue.*"
 
 type:feature:
   - ".*feature.*"
+  - ".*feat.*"
+  - ".*enhancement.*"
 
 type:docs:
   - ".*docs.*"
+  - ".*documentation.*"
+  - ".*readme.*"
+
+type:enhancement:
+  - ".*enhancement.*"
+  - ".*improve.*"
+  - ".*refactor.*"
+
+type:security:
+  - ".*security.*"
+  - ".*vulnerability.*"
+  - ".*csrf.*"
+  - ".*xss.*"
+
+type:performance:
+  - ".*performance.*"
+  - ".*optimize.*"
+  - ".*optimization.*"
+  - ".*perf.*"
+
+type:accessibility:
+  - ".*accessibility.*"
+  - ".*a11y.*"
+  - ".*aria.*"
+  - ".*keyboard.*"
+
+type:ui:
+  - ".*ui.*"
+  - ".*ux.*"
+  - ".*dark mode.*"
+  - ".*light mode.*"
+  - ".*responsive.*"
+  - ".*styling.*"
+
+type:testing:
+  - ".*test.*"
+  - ".*jest.*"
+  - ".*playwright.*"
+
+type:dependencies:
+  - ".*dependency.*"
+  - ".*deps.*"
+  - ".*package.*"
+  - ".*npm.*"
+
+priority:high:
+  - ".*critical.*"
+  - ".*urgent.*"
+  - ".*blocker.*"
+  - ".*p0.*"
+
+priority:medium:
+  - ".*important.*"
+  - ".*p1.*"
+
+priority:low:
+  - ".*minor.*"
+  - ".*p2.*"
+  - ".*nice to have.*"
