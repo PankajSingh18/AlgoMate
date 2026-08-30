@@ -466,6 +466,12 @@ function isSpectatorRateLimited(userId) {
   return entry.count > 5;
 }
 
+async function canSendSpectatorEvent(socket, matchId) {
+  if (!matchId || typeof matchId !== "string") return false;
+  if (!socket.rooms.has(`${matchId}-spectators`)) return false;
+  return (await redisClient.exists(`{arena}:match:${matchId}`)) === 1;
+}
+
 io.on("connection", async (socket) => {
   // Verify Supabase JWT from handshake auth using JWKS
   const token = socket.handshake.auth?.token;
@@ -761,35 +767,45 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("spectator_chat", (data) => {
-    if (!data.matchId || !data.message) return;
-    if (isSpectatorRateLimited(socket.data.userId)) return;
-    if (/<[^>]*>/.test(data.message)) return;
-    if (data.message.length > 500) return;
-    const safeUsername = `Spectator_${socket.id.slice(0, 6)}`;
-    socket.to(data.matchId).emit("spectator_chat", {
-      userId: socket.data.userId,
-      username: safeUsername,
-      message: data.message.slice(0, 500),
-      timestamp: Date.now()
-    });
+  socket.on("spectator_chat", async (data) => {
+    try {
+      if (!data?.matchId || !data.message) return;
+      if (!(await canSendSpectatorEvent(socket, data.matchId))) return;
+      if (isSpectatorRateLimited(socket.data.userId)) return;
+      if (/<[^>]*>/.test(data.message)) return;
+      if (data.message.length > 500) return;
+      const safeUsername = `Spectator_${socket.id.slice(0, 6)}`;
+      socket.to(data.matchId).emit("spectator_chat", {
+        userId: socket.data.userId,
+        username: safeUsername,
+        message: data.message.slice(0, 500),
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error(`[spectator_chat] Error for user ${socket.data.userId}:`, error);
+    }
   });
 
   const ALLOWED_EMOTES = new Set(['clap', 'laugh', 'cheer', 'boo', 'wave', 'popcorn', 'cry', 'heart', 'fire', 'thumbsup']);
 
-  socket.on("spectator_emote", (data) => {
-    if (!data.matchId || !data.emote) return;
-    if (isSpectatorRateLimited(socket.data.userId)) return;
-    if (typeof data.emote !== 'string') return;
-    if (data.emote.length > 50) return;
-    if (/<[^>]*>/.test(data.emote)) return;
-    const normalized = data.emote.toLowerCase().trim();
-    if (!ALLOWED_EMOTES.has(normalized)) return;
-    socket.to(data.matchId).emit("spectator_emote", {
-      userId: socket.data.userId,
-      emote: data.emote.slice(0, 50),
-      timestamp: Date.now()
-    });
+  socket.on("spectator_emote", async (data) => {
+    try {
+      if (!data?.matchId || !data.emote) return;
+      if (!(await canSendSpectatorEvent(socket, data.matchId))) return;
+      if (isSpectatorRateLimited(socket.data.userId)) return;
+      if (typeof data.emote !== 'string') return;
+      if (data.emote.length > 50) return;
+      if (/<[^>]*>/.test(data.emote)) return;
+      const normalized = data.emote.toLowerCase().trim();
+      if (!ALLOWED_EMOTES.has(normalized)) return;
+      socket.to(data.matchId).emit("spectator_emote", {
+        userId: socket.data.userId,
+        emote: data.emote.slice(0, 50),
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error(`[spectator_emote] Error for user ${socket.data.userId}:`, error);
+    }
   });
 
   socket.on("match_complete", async (data) => {
