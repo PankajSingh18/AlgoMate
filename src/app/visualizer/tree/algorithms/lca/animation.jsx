@@ -195,6 +195,8 @@ export default function LCAAnimation() {
 
   const handleReset = () => {
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     setSteps([]);
     setCurrentStepIdx(-1);
     setMessage("Select two nodes and click 'Find LCA' to trace the paths.");

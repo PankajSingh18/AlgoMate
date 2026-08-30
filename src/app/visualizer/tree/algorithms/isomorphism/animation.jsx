@@ -113,6 +113,8 @@ export default function IsomorphismAnimation() {
 
   const handleReset = () => {
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     setSteps([]);
     setCurrentStepIdx(-1);
     setMessage("Click 'Check Isomorphism' to compare the two trees step-by-step.");

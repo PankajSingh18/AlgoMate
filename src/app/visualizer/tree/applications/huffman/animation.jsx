@@ -157,6 +157,8 @@ export default function HuffmanAnimation() {
 
   const handleReset = () => {
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     setSteps([]);
     setCurrentStepIdx(-1);
     setTreeBuilt(false);

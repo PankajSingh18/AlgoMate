@@ -106,6 +106,8 @@ export default function DiameterAnimation() {
 
   const handleReset = () => {
     setAnimating(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    lockRef.current = false;
     setSteps([]);
     setCurrentStepIdx(-1);
     setMessage("Click 'Find Diameter' to calculate subtree heights.");
