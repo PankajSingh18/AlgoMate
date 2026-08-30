@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import ArrayGenerator from "@/app/components/ui/randomArray";
 import CustomArrayInput from "@/app/components/ui/customArrayInput";
@@ -69,6 +69,7 @@ const getNodePalette = (index, heapSize, activeIndices, compareIndices, swapIndi
 export default function HeapSortVisualizer() {
   const [array, setArray] = useState(DEFAULT_ARRAY);
   const [arraySize, setArraySize] = useState(DEFAULT_ARRAY.length);
+  const replayTimerRef = useRef(null);
   
   const [visualState, setVisualState] = useState({
     phase: "", message: "", comparisons: 0, swaps: 0,
@@ -111,17 +112,25 @@ export default function HeapSortVisualizer() {
   const engine = useAnimationEngine({ steps, onStep, initialSpeed: 900 });
   const currentStepData = steps[engine.currentStep];
   const displayArray = currentStepData?.array ?? array;
+
+  const clearReplayTimer = useCallback(() => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
+  }, []);
   
   const maxValue = useMemo(() => Math.max(...displayArray, 1), [displayArray]);
   const positions = useMemo(() => getTreePositions(displayArray.length), [displayArray.length]);
   const treeHeight = Math.max(260, 110 + Math.ceil(Math.log2(displayArray.length + 1)) * 94);
 
   const applyArray = useCallback((values) => {
+    clearReplayTimer();
     const next = clampArray(values);
     setArray(next);
     setArraySize(next.length);
     engine.reset();
-  }, [engine]);
+  }, [clearReplayTimer, engine]);
 
   const handleSizeChange = (event) => {
     const nextSize = Number(event.target.value);
@@ -133,17 +142,24 @@ export default function HeapSortVisualizer() {
     if (!array.length) return;
     if (currentStepData?.isSorted) {
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      clearReplayTimer();
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else {
       engine.play();
     }
-  }, [array.length, currentStepData?.isSorted, engine]);
+  }, [array.length, clearReplayTimer, currentStepData?.isSorted, engine]);
 
   const resetAll = useCallback(() => {
+    clearReplayTimer();
     engine.reset();
     setArray(DEFAULT_ARRAY);
     setArraySize(DEFAULT_ARRAY.length);
-  }, [engine]);
+  }, [clearReplayTimer, engine]);
+
+  useEffect(() => clearReplayTimer, [clearReplayTimer]);
 
   useVisualizerKeyboard({
     onStart: startHeapSort,
