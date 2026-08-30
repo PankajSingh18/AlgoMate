@@ -15,6 +15,7 @@ CREATE TABLE user_practice_stats (
     longest_streak INTEGER DEFAULT 0,
     last_active_date DATE,
     visualized_count INTEGER DEFAULT 0,
+    streak_freeze_count INTEGER NOT NULL DEFAULT 0,
     version INTEGER NOT NULL DEFAULT 0
 );
 
