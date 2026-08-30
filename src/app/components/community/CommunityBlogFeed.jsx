@@ -1,9 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PenLine, ArrowRight, Clock, CalendarDays } from "lucide-react";
-import React, { useState, useEffect } from "react";
 
 const CATEGORIES = ["All", "Tutorial", "Experience", "Release", "Guide"];
 
@@ -15,28 +14,6 @@ const MOCK_POSTS = [
   { id: 5, title: "How I Used AlgoBuddy to Ace My Technical Interview", excerpt: "My personal experience using interactive visualizations to prepare for FAANG-style coding interviews.", category: "Experience", author: { name: "James Kim", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=james" }, date: "2026-05-15", readTime: "6 min", color: "#059669" },
   { id: 6, title: "Understanding Graph Traversal Algorithms", excerpt: "A visual deep-dive into BFS and DFS with real-world applications and complexity analysis.", category: "Tutorial", author: { name: "Maria Garcia", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=maria" }, date: "2026-05-12", readTime: "8 min", color: "#a435f0" },
 ];
-
-const handleReadPost = (post) => {
-  const updated = [
-    post,
-    ...readingHistory.filter((p) => p.id !== post.id),
-  ].slice(0, 5);
-
-  setReadingHistory(updated);
-
-  localStorage.setItem(
-    "blog-reading-history",
-    JSON.stringify(updated)
-  );
-};
-
-useEffect(() => {
-  const saved = JSON.parse(
-    localStorage.getItem("blog-reading-history") || "[]"
-  );
-
-  setReadingHistory(saved);
-}, []);
 
 function BlogSkeleton() {
   return (
@@ -121,6 +98,34 @@ function BlogCard({ post }) {
 export default function CommunityBlogFeed({ loading = false }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [readingHistory, setReadingHistory] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("blog-reading-history") || "[]"
+      );
+
+      setReadingHistory(saved);
+    } catch {
+      setReadingHistory([]);
+    }
+  }, []);
+
+  const handleReadPost = (post) => {
+    const updated = [
+      post,
+      ...readingHistory.filter((p) => p.id !== post.id),
+    ].slice(0, 5);
+
+    setReadingHistory(updated);
+
+    try {
+      localStorage.setItem(
+        "blog-reading-history",
+        JSON.stringify(updated)
+      );
+    } catch {}
+  };
 
   const filtered = activeCategory === "All"
     ? MOCK_POSTS
