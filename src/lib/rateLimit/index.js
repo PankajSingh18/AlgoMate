@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { jwtVerify, createRemoteJWKSet } from "jose";
-import { getClientIp } from "../getClientIp.js";
+import { resolveClientId } from "../getClientIp.js";
 import { createLogger } from "../logger.js";
 
 const log = createLogger("rateLimit");
@@ -86,8 +86,8 @@ async function resolveIdentityKey(request) {
       log.warn({ err }, "JWT verification failed, falling back to IP-based key.");
     }
   }
-  const ip = getClientIp(request.headers);
-  return `ip:${ip}`;
+  const clientId = resolveClientId(request.headers);
+  return `ip:${clientId}`;
 }
 
 export function createRateLimiter(options) {

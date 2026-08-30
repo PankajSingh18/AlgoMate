@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getSupabaseServerClient, jsonResponse, errorResponse } from "@/lib/serverApi";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { getClientIp } from "@/lib/getClientIp";
+import { resolveClientId } from "@/lib/getClientIp";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -37,9 +37,9 @@ function sanitizeSearchTerm(raw) {
 
 export async function GET(request) {
   try {
-    const ip = getClientIp(request.headers);
+    const clientId = resolveClientId(request.headers);
 
-    const { allowed } = await checkRateLimit(`student-jobs:${ip}`);
+    const { allowed } = await checkRateLimit(`student-jobs:${clientId}`);
     if (!allowed) {
       return jsonResponse({ error: "Too many search requests. Please slow down." }, 429);
     }

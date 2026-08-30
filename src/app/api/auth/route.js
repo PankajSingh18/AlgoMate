@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Redis } from "@upstash/redis";
 import { checkRateLimit, shouldBypassRateLimit } from "@/lib/rateLimit";
-import { getClientIp } from "@/lib/getClientIp";
+import { getClientIp, resolveClientId } from "@/lib/getClientIp";
 import { verifyTurnstile } from "@/lib/verifyTurnstile";
 import { jsonResponse, errorResponse, getSupabaseAdmin } from "@/lib/serverApi";
 
@@ -241,6 +241,9 @@ export async function POST(req) {
     }
 
     const ip = getClientIp(req.headers);
+    // Rate-limit key uses a fingerprint when no trusted IP is available so
+    // anonymous clients never share a single bucket.
+    const clientId = resolveClientId(req.headers);
 
     const explicitBypass = process.env.TURNSTILE_BYPASS === "true";
     let captcha;
@@ -273,7 +276,7 @@ export async function POST(req) {
     const actionName = action === "signup" ? "signup" : "login";
 
     const [ipLimit, emailLimit] = await Promise.all([
-      checkRateLimit(`${AUTH_RATE_LIMIT_PREFIX}:${actionName}:ip:${ip}`),
+      checkRateLimit(`${AUTH_RATE_LIMIT_PREFIX}:${actionName}:ip:${clientId}`),
       checkRateLimit(`${AUTH_RATE_LIMIT_PREFIX}:${actionName}:email:${normalizedEmail}`),
     ]);
 

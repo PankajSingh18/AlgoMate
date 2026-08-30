@@ -1,5 +1,5 @@
 import { checkRateLimit } from "@/lib/rateLimit";
-import { getClientIp } from "@/lib/getClientIp";
+import { resolveClientId } from "@/lib/getClientIp";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { jsonResponse, errorResponse } from "@/lib/serverApi";
 
@@ -36,10 +36,10 @@ export async function POST(req) {
       return jsonResponse({ error: "Missing or invalid 'language' string." }, 400);
     }
 
-    const ip = getClientIp(req.headers);
+    const clientId = resolveClientId(req.headers);
 
     // 2. Rate Limiting Check
-    const { allowed } = await checkRateLimit(`complexity:estimate:${ip}`);
+    const { allowed } = await checkRateLimit(`complexity:estimate:${clientId}`);
     if (!allowed) {
       return jsonResponse(
         { error: "Too many requests. Please wait a minute and try again." },

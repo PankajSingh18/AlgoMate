@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getClientIp } from "@/lib/getClientIp";
+import { resolveClientId } from "@/lib/getClientIp";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -73,11 +73,12 @@ export async function POST(request) {
   try {
     // ── 1. RATE LIMITING ──────────────────────────────────────────────────────
     // Use the authenticated user ID as the rate-limit identifier when available,
-    // falling back to IP address for unauthenticated requests.
+    // falling back to a per-client fingerprint for unauthenticated requests.
     // The x-user-id header is set by authProxy.js middleware after Supabase
-    // session verification.
+    // session verification. resolveClientId() never returns a shared constant,
+    // so anonymous users are never collapsed into one rate-limit bucket.
     const userId = request.headers.get("x-user-id");
-    const rateLimitId = userId || getClientIp(request) || "anonymous";
+    const rateLimitId = userId || resolveClientId(request.headers);
 
     const { success, limit, remaining, reset } = await ratelimit.limit(rateLimitId);
 

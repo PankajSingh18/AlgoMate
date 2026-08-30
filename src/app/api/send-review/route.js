@@ -1,6 +1,6 @@
 import { getTransporter } from "@/lib/emailTransporter";
 import { checkRateLimit, checkGlobalSmtpQuota } from "@/lib/rateLimit";
-import { getClientIp } from "@/lib/getClientIp";
+import { getClientIp, resolveClientId } from "@/lib/getClientIp";
 import { verifyTurnstile } from "@/lib/verifyTurnstile";
 import { validateCsrfTokenEdge } from "@/lib/csrfToken";
 import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from "@/lib/csrfConstants";
@@ -29,9 +29,10 @@ export async function POST(request) {
 
   try {
     const ip = getClientIp(request.headers);
+    const clientId = resolveClientId(request.headers);
 
     const { allowed, remaining, resetAt } =
-      await checkRateLimit(`review:${ip}`);
+      await checkRateLimit(`review:${clientId}`);
     if (!allowed) {
       const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
       return jsonResponse({ message: "Too many requests. Please try again later." }, 429, {
