@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import Footer from '@/app/components/footer';
 import { AlertCircle, CheckCircle, Info, BookOpen, Layers, Award } from 'lucide-react';
 import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
@@ -247,6 +247,7 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
   const [quizIdx, setQuizIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const playTimerRef = useRef(null);
   
 
   // Pre-calculate steps when tree or mode changes
@@ -276,6 +277,13 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
 
   const engine = useAnimationEngine({ steps, onStep, initialSpeed: 1 });
 
+  const clearPlayTimer = useCallback(() => {
+    if (playTimerRef.current) {
+      clearTimeout(playTimerRef.current);
+      playTimerRef.current = null;
+    }
+  }, []);
+
   const startPlayback = useCallback(() => {
     if (!root) {
       setMessage('⚠️ Please insert a node or generate a random tree first!');
@@ -286,14 +294,19 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
     if (engine.currentStep >= steps.length - 1) {
       engine.reset();
     }
-    setTimeout(() => engine.play(), 0);
-  }, [root, steps, engine]);
+    clearPlayTimer();
+    playTimerRef.current = setTimeout(() => {
+      playTimerRef.current = null;
+      engine.play();
+    }, 0);
+  }, [root, steps, engine, clearPlayTimer]);
 
   useEffect(() => {
     setMode(initialMode);
+    clearPlayTimer();
     engine.reset();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialMode]);
+  }, [initialMode, clearPlayTimer]);
 
   // Pure functional BST insertion
   const insertNode = (node, value) => {
@@ -323,10 +336,12 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
       return newRoot;
     });
     setInputValue('');
+    clearPlayTimer();
     engine.reset();
   };
 
   const generateRandomTree = () => {
+    clearPlayTimer();
     engine.reset();
     // Predefined sequences that create highly balanced, beautiful trees
     const trees = [
@@ -368,9 +383,12 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
 
   const handleResetTree = () => {
     setRoot(null);
+    clearPlayTimer();
     engine.reset();
     setMessage('Tree has been cleared. Add nodes or click Generate.');
   };
+
+  useEffect(() => clearPlayTimer, [clearPlayTimer]);
 
   // Quiz behaviors
   const handleQuizAnswer = (idx) => {
