@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import ArrayGenerator from "@/app/components/ui/randomArray";
 import CustomArrayInput from "@/app/components/ui/customArrayInput";
 import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
@@ -151,6 +151,7 @@ const precomputeSteps = (inputArray) => {
 
 const BucketSortVisualizer = () => {
   const [array, setArray] = useState([]);
+  const replayTimerRef = useRef(null);
 
   const [visualState, setVisualState] = useState({
     buckets: [],
@@ -183,16 +184,28 @@ const BucketSortVisualizer = () => {
   const engine = useAnimationEngine({ steps, onStep, initialSpeed: 500 });
   const currentStepData = steps[engine.currentStep];
 
+  const clearReplayTimer = useCallback(() => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
+  }, []);
+
   const handleStart = useCallback(() => {
     if (currentStepData?.sorted) {
+      clearReplayTimer();
       engine.reset();
-      setTimeout(() => engine.play(), 50);
+      replayTimerRef.current = setTimeout(() => {
+        replayTimerRef.current = null;
+        engine.play();
+      }, 50);
     } else {
       engine.play();
     }
-  }, [engine, currentStepData]);
+  }, [clearReplayTimer, engine, currentStepData]);
 
   const handleReset = useCallback(() => {
+    clearReplayTimer();
     setVisualState({
       buckets: [],
       comparisons: 0, swaps: 0, 
@@ -200,7 +213,9 @@ const BucketSortVisualizer = () => {
       currentPhase: "", stepExplanation: "", sorted: false, totalSteps: 0,
     });
     engine.reset();
-  }, [engine]);
+  }, [clearReplayTimer, engine]);
+
+  useEffect(() => clearReplayTimer, [clearReplayTimer]);
 
   useVisualizerKeyboard({
     onStart: handleStart,
