@@ -21,6 +21,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ArenaServiceUnitTest {
@@ -164,7 +165,9 @@ public class ArenaServiceUnitTest {
         verify(profileRepository, never()).findProfileWithUserDetails(userId);
         verify(profileRepository, times(1)).findRankByUserId(userId);
         
-        assertNull(cachedResponse.getRank());
+        // Assert that the returned payload contains the recalculated rank
+        // and that the original cached reference was not mutated directly
+        assertNull(cachedResponse.getRank(), "Original cached object reference should remain unmutated");
     }
 
     @Test
