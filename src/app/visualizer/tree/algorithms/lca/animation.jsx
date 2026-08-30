@@ -85,8 +85,9 @@ export default function LCAAnimation() {
   const startVisualizer = () => {
     if (steps.length === 0) return;
     setAnimating(true);
-    const nextIdx = currentStepIdx === -1 || currentStepIdx >= steps.length - 1 ? 0 : currentStepIdx + 1;
-    setCurrentStepIdx(nextIdx);
+    if (currentStepIdx === -1 || currentStepIdx >= steps.length - 1) {
+      setCurrentStepIdx(0);
+    }
   };
   const stepForward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); if (stepIdxRef.current < steps.length - 1) setCurrentStepIdx(p => p + 1); };
   const stepBackward = () => { if (lockRef.current) return; setAnimating(false); if (timerRef.current) clearTimeout(timerRef.current); if (stepIdxRef.current > 0) setCurrentStepIdx(p => p - 1); };
