@@ -1,5 +1,6 @@
 export function* peekFrontGenerator(queue) {
   if (queue.length === 0) {
+    yield { phase: 'error', action: 'peek', queue: [...queue], explanation: 'Cannot peek, queue is empty!' };
     yield { type: 'error', message: 'Queue is empty!', isFull: false };
     return;
   }
