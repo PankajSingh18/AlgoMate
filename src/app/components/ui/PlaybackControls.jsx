@@ -58,7 +58,7 @@ export default function PlaybackControls({
     <div
       role="toolbar"
       aria-label="Visualization controls"
-      className="flex flex-col sm:flex-row items-center justify-between w-full bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-3 md:p-4 rounded-2xl shadow-lg shadow-black/20 gap-4"
+      className="flex flex-col sm:flex-row flex-wrap items-center justify-between w-full bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-3 md:p-4 rounded-2xl shadow-lg shadow-black/20 gap-4"
     >
       <div
         aria-live="polite"
@@ -193,7 +193,7 @@ export default function PlaybackControls({
 
       {progressText && (
         <div
-          className="hidden lg:block text-right bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800"
+          className="block text-right bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0"
           aria-label={`Progress: ${progressText}`}
         >
           <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest" aria-hidden="true">PROGRESS</div>
