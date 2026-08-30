@@ -11,7 +11,7 @@ const rabinKarpLogic = {
   timeComplexity: {
     best: "O(n + m)",
     average: "O(n + m)",
-    worst: "O(n × m)",
+    worst: "O(n * m)",
   },
 
   spaceComplexity: "O(1)",
