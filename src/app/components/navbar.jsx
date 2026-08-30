@@ -188,7 +188,7 @@ export default function Navbar() {
       localStorage.removeItem("algobuddy_current_streak");
       localStorage.removeItem("algobuddy_best_streak");
       localStorage.removeItem("algobuddy_last_active_date");
-      localStorage.removeItem("PROBLEM_BOOKMARKS");
+      localStorage.removeItem("algobuddy_problem_bookmarks");
     }
     setMenuOpen(false);
     window.location.href = "/";
