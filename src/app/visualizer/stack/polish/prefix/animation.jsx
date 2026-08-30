@@ -50,6 +50,7 @@ const InfixToPrefixVisualizer = () => {
   const [visualState, setVisualState] = useState({
     stack: [], output: [], operation: null, message: "Enter an infix expression and click Convert"
   });
+  const autoPlayTimerRef = useRef(null);
 
   /* ----------  playback  ---------- */
   const onStep = useCallback((step) => {
@@ -65,6 +66,10 @@ const InfixToPrefixVisualizer = () => {
   
   /* ----------  helpers  ---------- */
   const reset = useCallback(() => {
+    if (autoPlayTimerRef.current) {
+      clearTimeout(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = null;
+    }
     engine.reset();
     setPrefix("");
     setSteps([]);
@@ -88,7 +93,9 @@ const InfixToPrefixVisualizer = () => {
     setSteps(result.steps);
     setPrefix(result.prefixResult);
     setIsProcessing(false);
-    setTimeout(() => {
+    if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    autoPlayTimerRef.current = setTimeout(() => {
+      autoPlayTimerRef.current = null;
       engine.play();
     }, 50);
   };
@@ -106,6 +113,10 @@ const InfixToPrefixVisualizer = () => {
     if (statusRef.current)
       gsap.fromTo(statusRef.current, { scale: 0.95, opacity: 0.7 }, { scale: 1, opacity: 1, duration: 0.3 });
   }, [visualState.message]);
+
+  useEffect(() => () => {
+    if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+  }, []);
 
   useVisualizerKeyboard({
     onStart: undefined, 
