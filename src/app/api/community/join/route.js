@@ -14,11 +14,15 @@ export async function POST(request) {
     }
     const body = await request.json().catch(() => ({}));
     const { joined } = body;
+    if (typeof joined !== "boolean") {
+      return jsonResponse({ error: "joined must be a boolean" }, 400);
+    }
+
     const cookieStore = await cookies();
     const supabase = getSupabaseServerClient(cookieStore);
     const { error } = await supabase
       .from("user_profiles")
-      .upsert({ id: authResult.user.id, joined_community: joined !== false }, { onConflict: "id" });
+      .upsert({ id: authResult.user.id, joined_community: joined }, { onConflict: "id" });
     if (error) return jsonResponse({ error: error.message }, 500);
     return jsonResponse({ success: true });
   } catch (error) {
