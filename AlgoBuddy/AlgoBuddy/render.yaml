@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: algobuddy-backend
+    runtime: docker
+    region: singapore # Feel free to change to ohio, frankfurt, or oregon based on your preference
+    plan: free
+    envVars:
+      # You will need to securely provide the values for these in the Render Dashboard:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+  - type: web
+    name: algobuddy-socket-server
+    runtime: node
+    plan: free
+    region: singapore # Match the backend region to minimize latency
+    rootDir: arena-socket-server
+    buildCommand: npm install
+    startCommand: npm start

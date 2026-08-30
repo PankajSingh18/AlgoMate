@@ -1,0 +1,56 @@
+/* dark-mode.css – modern palette and transitions */
+:root {
+  --bg: #ffffff;
+  --fg: #111111;
+  --accent: #0066ff;
+  --radius: 8px;
+  --transition: .3s;
+}
+[data-theme="dark"] {
+  --bg: #111111;
+  --fg: #eeeeee;
+  --accent: #66aaff;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", "Roboto", sans-serif;
+  transition: var(--transition);
+}
+h1, h2, h3 { color: var(--accent); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { opacity: .8; }
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: .5rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+button:hover { opacity: .9; }
+input, select, textarea {
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  padding: .5rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: var(--transition);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: .5rem 1rem;
+  z-index: 9999;
+  cursor: pointer;
+}

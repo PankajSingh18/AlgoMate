@@ -150,6 +150,15 @@ export default function PracticePage() {
     return allProblems.find((p) => getStatus(p.id) !== "Completed") || null;
   }, [allProblems, getStatus]);
 
+  // Build problemId -> difficulty map for Activity Heatmap
+  const problemsMap = useMemo(() => {
+    const map = {};
+    allProblems.forEach((p) => {
+      map[p.id] = { difficulty: p.difficulty };
+    });
+    return map;
+  }, [allProblems]);
+
   // Compute Session Stats Dynamically from current loaded practiceData
   const stats = useMemo(() => {
     let solved = 0;
@@ -511,6 +520,8 @@ export default function PracticePage() {
           {activeView === "dashboard" ? (
             <PracticeDashboard
               dailyChallenge={dailyChallenge}
+                progress={progress}
+                problemsMap={problemsMap}
               solvedCount={stats.solved}
               dailySolved={stats.dailySolved}
               weeklySolved={stats.weeklySolved}

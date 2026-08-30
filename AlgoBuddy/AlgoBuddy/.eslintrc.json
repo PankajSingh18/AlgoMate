@@ -1,0 +1,27 @@
+{
+  "rules": {
+    "no-undef": "error",
+    "no-unused-vars": "warn"
+  },
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "globals": {
+    "React": true,
+    "process": true,
+    "console": true,
+    "setTimeout": true,
+    "clearTimeout": true,
+    "window": true,
+    "document": true
+  }
+}

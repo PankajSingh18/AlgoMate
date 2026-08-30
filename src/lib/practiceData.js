@@ -170,6 +170,26 @@ export const practiceData = [
               pitfalls: "Can degrade to O(N²) worst-case time complexity if the pivot chosen is always the smallest or largest element.",
               tip: "Choose a random pivot element to significantly reduce worst-case risks to a negligible probability."
             }
+          },
+          {
+            id: "trapping-rain-water",
+            name: "Trapping Rain Water",
+            difficulty: "Hard",
+            companies: ["google", "amazon", "microsoft", "adobe", "goldman sachs"],
+            practiceUrl: "https://leetcode.com/problems/trapping-rain-water/",
+            visualizerUrl: null,
+            theory: {
+              summary: "Given an array representing elevation heights, calculate how much water can be trapped between the bars after raining.",
+              steps: [
+                "For each index, find the maximum height to its left (leftMax) and maximum height to its right (rightMax).",
+                "The water trapped at that index equals min(leftMax, rightMax) - height[index], if positive.",
+                "Sum up the trapped water across all indices for the total answer.",
+                "Optimize using two pointers (left, right) to avoid extra arrays for leftMax/rightMax."
+              ],
+              complexity: { time: "O(N)", space: "O(1) with two-pointer approach" },
+              pitfalls: "Using brute force (checking left/right max for every index separately) leads to O(N²) time. Forgetting that water can only be trapped up to the shorter of the two surrounding walls.",
+              tip: "This is a classic two-pointer pattern question — master it and problems like 'Container With Most Water' become much easier."
+            }
           }
         ]
       }

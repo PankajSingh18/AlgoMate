@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import ActivityHeatmap from "./ActivityHeatmap";
 import { 
   Flame, 
   Trophy, 
@@ -37,7 +38,9 @@ export default function PracticeDashboard({
   totalMed = 1,
   totalHard = 1,
   companiesCount = 0,
-  activityData = []
+  activityData = [],
+  progress = {},
+  problemsMap = {}
 }) {
 
   const achievementBadges = [
@@ -56,6 +59,10 @@ export default function PracticeDashboard({
       {/* LEFT COLUMN (History)   */}
       {/* ======================= */}
       <div className="xl:col-span-8 flex flex-col gap-6">
+        
+        {/* Activity Heatmap */}
+        <ActivityHeatmap progress={progress} problemsMap={problemsMap} />
+
         
         {/* Practice History Table Header */}
         <div>
@@ -282,3 +289,6 @@ export default function PracticeDashboard({
     </div>
   );
 }
+
+
+

@@ -1,4 +1,4 @@
-﻿export const dpCodeSnippets = {
+export const dpCodeSnippets = {
   knapsack: {
     JavaScript: [
       "function knapsack(weights, values, W) {",
@@ -83,23 +83,20 @@
   },
 };
 
+// Given the current animation frame, figure out which code line to highlight
 export function getHighlightLine(algorithm, frame) {
   if (!frame) return -1;
-
   if (algorithm === "knapsack") {
-    if (frame.row === 0 || frame.col === 0) return 1;
-    return 5;
+    if (frame.row === 0 || frame.col === 0) return 1; // base case row/col
+    return 5; // inside recurrence
   }
-
   if (algorithm === "lcs") {
     if (frame.row === 0 || frame.col === 0) return 1;
-    return 4;
+    return 4; // comparison line
   }
-
   if (algorithm === "coin-change") {
-    if (frame.index === 0) return 2;
-    return 5;
+    if (frame.index === 0) return 2; // base case
+    return 5; // inner coin loop
   }
-
   return -1;
 }
