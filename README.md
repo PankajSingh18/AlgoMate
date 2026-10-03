@@ -5,12 +5,12 @@
 
 <br/>
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-algobuddy.me-6366f1?style=for-the-badge&logoColor=white)](https://algobuddy.me)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-algomate.me-6366f1?style=for-the-badge&logoColor=white)](https://algomate.me)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
-[![CI](https://github.com/PankajSingh34/AlgoBuddy/actions/workflows/test.yml/badge.svg)](https://github.com/PankajSingh34/AlgoBuddy/actions/workflows/test.yml)
+[![CI](https://github.com/pankajsingh18/AlgoMate/actions/workflows/test.yml/badge.svg)](https://github.com/pankajsingh18/AlgoMate/actions/workflows/test.yml)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-red?style=for-the-badge&logo=shieldsdotio&logoColor=white)](SECURITY.md)
-[![Stars](https://img.shields.io/github/stars/PankajSingh34/AlgoBuddy?style=for-the-badge&color=f59e0b)](https://github.com/PankajSingh34/AlgoBuddy/stargazers)
-[![Forks](https://img.shields.io/github/forks/PankajSingh34/AlgoBuddy?style=for-the-badge&color=6366f1)](https://github.com/PankajSingh34/AlgoBuddy/forks)
+[![Stars](https://img.shields.io/github/stars/pankajsingh18/AlgoMate?style=for-the-badge&color=f59e0b)](https://github.com/pankajsingh18/AlgoMate/stargazers)
+[![Forks](https://img.shields.io/github/forks/pankajsingh18/AlgoMate?style=for-the-badge&color=6366f1)](https://github.com/pankajsingh18/AlgoMate/forks)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-ec4899?style=for-the-badge)](CONTRIBUTING.md)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Gv2N4U3KAc)
 
@@ -28,7 +28,7 @@
 
 ## Table of Contents
 
-- [Why AlgoBuddy?](#why-algobuddy)
+- [Why AlgoMate?](#why-algobuddy)
 - [Features](#features)
   - [Algorithm Visualizer](#algorithm-visualizer)
   - [User System & Progress Tracking](#user-system--progress-tracking)
@@ -56,13 +56,13 @@
 
 <br/>
 
-## Why AlgoBuddy?
+## Why AlgoMate?
 
 > *"Tell me and I forget, teach me and I remember, involve me and I learn."* — Benjamin Franklin
 
-Most DSA resources are walls of text and static diagrams. **AlgoBuddy changes that** by letting you interact with every data structure and algorithm in real time.
+Most DSA resources are walls of text and static diagrams. **AlgoMate changes that** by letting you interact with every data structure and algorithm in real time.
 
-Tools like [VisuAlgo](https://visualgo.net/) show animations but are read-only. AlgoBuddy goes further: algorithms are coupled with **user progress tracking, streaks, AI-assisted explanations, and a practice sheet** — so it functions as a learning system, not just a reference. It's also fully open-source, so every visualizer is a contribution opportunity.
+Tools like [VisuAlgo](https://visualgo.net/) show animations but are read-only. AlgoMate goes further: algorithms are coupled with **user progress tracking, streaks, AI-assisted explanations, and a practice sheet** — so it functions as a learning system, not just a reference. It's also fully open-source, so every visualizer is a contribution opportunity.
 
 <table>
 <td width="52%">
@@ -76,7 +76,7 @@ Tools like [VisuAlgo](https://visualgo.net/) show animations but are read-only. 
 </td>
 <td width="47%">
 
-**The AlgoBuddy Way**
+**The AlgoMate Way**
 - **Watch** algorithms execute step-by-step
 - **Interact** with data structures directly
 - **Track** your learning journey with streaks
@@ -417,8 +417,8 @@ graph TB
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/PankajSingh34/AlgoBuddy.git
-cd AlgoBuddy
+git clone https://github.com/pankajsingh18/AlgoMate.git
+cd AlgoMate
 ```
 
 ### 2. Install Dependencies
@@ -534,7 +534,7 @@ npm run test:security  # Run XSS security tests only
 <summary><strong>View full directory tree</strong></summary>
 
 ```
-AlgoBuddy/
+AlgoMate/
 │
 ├── src/app/                         # Next.js App Router
 │   ├── api/                         #   API routes (auth, chatbot, mysheet, etc.)
@@ -601,7 +601,7 @@ AlgoBuddy/
 
 ## Contributing
 
-We welcome contributions! AlgoBuddy is built by the community, for the community.
+We welcome contributions! AlgoMate is built by the community, for the community.
 
 ### Contribution Areas
 
@@ -621,7 +621,7 @@ We welcome contributions! AlgoBuddy is built by the community, for the community
 
 ```bash
 # 1. Fork this repo and clone your fork
-git clone https://github.com/YOUR_USERNAME/AlgoBuddy.git
+git clone https://github.com/YOUR_USERNAME/AlgoMate.git
 
 # 2. Create a feature branch
 git checkout -b feature/your-feature-name
@@ -639,7 +639,7 @@ git push origin feature/your-feature-name
 
 ### Issue Assignment Process
 
-1. Browse [**open issues**](https://github.com/PankajSingh34/AlgoBuddy/issues) or create a new one
+1. Browse [**open issues**](https://github.com/pankajsingh18/AlgoMate/issues) or create a new one
 2. Comment asking to be assigned
 3. Wait for maintainer assignment before starting
 4. Submit a PR referencing the issue number
@@ -662,9 +662,9 @@ Ask questions, share ideas, show off your contributions, and connect with fellow
 
 <div align="center">
 
-If AlgoBuddy helped you learn, please consider giving it a star — it means a lot!
+If AlgoMate helped you learn, please consider giving it a star — it means a lot!
 
-[![Stars over time](https://img.shields.io/github/stars/PankajSingh34/AlgoBuddy?style=for-the-badge&logo=github&color=f59e0b)](https://star-history.com/#PankajSingh34/AlgoBuddy)
+[![Stars over time](https://img.shields.io/github/stars/pankajsingh18/AlgoMate?style=for-the-badge&logo=github&color=f59e0b)](https://star-history.com/#pankajsingh18/AlgoMate)
 
 </div>
 
@@ -674,8 +674,8 @@ If AlgoBuddy helped you learn, please consider giving it a star — it means a l
 
 <div align="center">
 
-<a href="https://github.com/PankajSingh34/AlgoBuddy/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=PankajSingh34/AlgoBuddy&max=100&columns=12" />
+<a href="https://github.com/pankajsingh18/AlgoMate/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=pankajsingh18/AlgoMate&max=100&columns=12" />
 </a>
 
 </div>
@@ -696,8 +696,8 @@ This project is licensed under the **MIT License** — see the [**LICENSE**](LIC
 
 <div align="center">
 
-**Built with ♥ by the AlgoBuddy community**
+**Built with ♥ by the AlgoMate community**
 
-[Website](https://www.algobuddy.me/) · [Discord](https://discord.gg/Gv2N4U3KAc) · [Issues](https://github.com/PankajSingh34/AlgoBuddy/issues) · [Pull Requests](https://github.com/PankajSingh34/AlgoBuddy/pulls)
+[Website](https://www.algomate.me/) · [Discord](https://discord.gg/Gv2N4U3KAc) · [Issues](https://github.com/pankajsingh18/AlgoMate/issues) · [Pull Requests](https://github.com/pankajsingh18/AlgoMate/pulls)
 
 </div>
