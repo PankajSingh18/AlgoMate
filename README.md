@@ -35,7 +35,6 @@
   - [Blog Platform](#blog-platform)
   - [UX & Design](#ux--design)
 - [Supported Algorithms & Data Structures](#supported-algorithms--data-structures)
-- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Quick Start](#quick-start)
