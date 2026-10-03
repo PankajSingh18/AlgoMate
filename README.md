@@ -293,43 +293,6 @@ Animated, step-by-step visualizations for a wide range of DSA topics:
 | String | KMP Algorithm, Z-Algorithm | ✓ |
 | Complexity Analysis | Time & Space Complexity Graphs | ✓ |
 
-## Screenshots
-
-![Home Page](public/screenshots/Home-page.png)
-
-*Landing page with algorithm category navigation, feature overview, and community stats.*
-
-<br/>
-
-![Visualizer](public/screenshots/visualizer-page.png)
-
-*Step-by-step algorithm visualizer with controls, pseudocode panel, and complexity info.*
-
-<br/>
-
-<details>
-<summary><strong>Authentication Page</strong> — Login and signup with Google OAuth or email/password, protected by Cloudflare Turnstile.</summary>
-
-![Login Page](public/screenshots/login-page.png)
-
-</details>
-
-<details>
-<summary><strong>Queue Visualization</strong> — Animated circular queue showing enqueue/dequeue operations with pointer movement.</summary>
-
-![Queue Visualization](public/screenshots/queue-visualization-page.png)
-
-</details>
-
-<details>
-<summary><strong>Queue Operations</strong> — Side-by-side operations panel with live memory-state rendering.</summary>
-
-![Queue Operations](public/screenshots/queue-operations-page.png)
-
-</details>
-
-
-<br/>
 
 ## Tech Stack
 
