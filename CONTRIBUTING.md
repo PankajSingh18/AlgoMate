@@ -1,6 +1,6 @@
 # Contributing to AlgoBuddy
 
-Thank you for your interest in contributing to **AlgoBuddy**!
+Thank you for your interest in contributing to **AlgoMate**!
 We welcome and appreciate contributions from the community to help make this project better.
 
 ---
